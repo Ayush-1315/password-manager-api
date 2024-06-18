@@ -1,3 +1,5 @@
+const bcrypt=require('bcrypt')
+
 const User=require('../models/user.model');
 
 //User SignUp on database
@@ -11,4 +13,24 @@ const userSignupService=async(userData)=>{
     }
 }
 
-module.exports={userSignupService}
+//User Login on database
+const userLoginService=async(user,password)=>{
+    try{
+        const userData=await User.findOne({$or:[{username:user},{email:user}]});
+        if(userData)
+            {
+                const isValidPassword=await bcrypt.compare(password,userData.password)
+                if(isValidPassword)
+                    return(userData)
+                else
+                    return false
+            }
+            else{
+                return null;
+            }
+        
+    }catch(e){
+        throw e
+    }
+}
+module.exports={userSignupService,userLoginService}

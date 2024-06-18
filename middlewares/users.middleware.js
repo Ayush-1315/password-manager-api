@@ -28,8 +28,27 @@ const validateSignupMiddleware = (req, res, next) => {
     });
   }
 };
-
+const validateLoginMiddleware = (req, res, next) => {
+  const { user, password } = req.body;
+  if (
+    user.trim() &&
+    password.trim() &&
+    typeof user === "string" &&
+    typeof password === "string"
+  ) {
+    if (password.length >= 8) {
+      req.body.user = user.trim();
+      req.body.password = password.trim();
+      next();
+    } else
+      res
+        .status(400)
+        .json({ message: "Invalid Credentials" });
+  } else {
+    res.status(400).json({ message: "Invalid credentials" });
+  }
+};
 module.exports = {
   validateSignupMiddleware,
-
+  validateLoginMiddleware,
 };
