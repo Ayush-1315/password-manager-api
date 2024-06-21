@@ -22,4 +22,6 @@ const userDeleteMailOptions = (email, otp) => ({
            </p>
     `,
 });
+
+// ADD MAIL OPTIONS FOR PASSWORD DELETION, PASSWORD UPDATE, WELCOME MAIL, FORGOT PASSWORD
 module.exports = { transporter,userDeleteMailOptions };

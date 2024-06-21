@@ -20,11 +20,13 @@ const userSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        trim: true
+        trim: true,
+        default:""
     },
     lastName: {
         type: String,
-        trim: true
+        trim: true,
+        default:""
     },
     createdAt: {
         type: Date,

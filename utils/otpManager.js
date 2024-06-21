@@ -8,11 +8,12 @@ const otpGenerator=()=>randomString.generate({
 })
 
 //Storing OTP
-const storeOtp=(email,otp)=>{
+const storeOtp=(username,email,otp)=>{
     const newOtp={
+        username,
         email,
         otp,
-        expiry:Date.now()+180000,// Valid for 3 minutes
+        expiry:Date.now()+180000,// Valid for 3 minutes,
     }
     const emailIndex=otps.findIndex((ele)=>ele.email===email);
     if(emailIndex!==-1){
@@ -23,26 +24,27 @@ const storeOtp=(email,otp)=>{
 }
 
 // Verifying OTP
-const verifyOtp=(email,otp)=>{
-    const entry=otps.find(ele=>ele.email===email && ele.otp===otp)
+const verifyOtp=(username,otp)=>{
+    const entry=otps.find(ele=>ele.username===username && ele.otp===otp)
     if(entry){
         if(entry.expiry-Date.now()>0){
             otps.splice(otps.indexOf(entry),1);
             return true;
         }
         else{
+            const error=new Error('OTP Expired');
+            error.status=403;
+            error.message='OTP Expired'
             otps.splice(otps.indexOf(entry),1);
-            throw new Error({
-                status:403,
-                message:'OTP Expired'
-            })
+            throw error;
+            
         }
     }
     else{
-        throw new Error({
-            status:400,
-            message:'Invalid OTP'
-        })
+        const error=new Error('Invalid OTP');
+        error.status=400;
+        error.message='Invalid OTP'
+        throw error;
     }
 }
 module.exports={

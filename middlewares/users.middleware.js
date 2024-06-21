@@ -1,5 +1,4 @@
 // Signup credential Validator
-
 const validateSignupMiddleware = (req, res, next) => {
   const { username, password, email } = req.body;
 
@@ -28,6 +27,8 @@ const validateSignupMiddleware = (req, res, next) => {
     });
   }
 };
+
+//Login Credential Validator
 const validateLoginMiddleware = (req, res, next) => {
   const { user, password } = req.body;
   if (
@@ -40,15 +41,29 @@ const validateLoginMiddleware = (req, res, next) => {
       req.body.user = user.trim();
       req.body.password = password.trim();
       next();
-    } else
-      res
-        .status(400)
-        .json({ message: "Invalid Credentials" });
+    } else res.status(400).json({ message: "Invalid Credentials" });
   } else {
     res.status(400).json({ message: "Invalid credentials" });
+  }
+};
+// Delete user Validator
+
+const deleterUserMiddleware = (req, res, next) => {
+  // const {username,password,id}=req.body;
+  const username = req.body.username?.trim();
+  const password = req.body.password?.trim();
+  const otp=req.body.otp?.trim();
+  const id = req.params.id?.trim();
+  if (username && password && id && otp) {
+    next();
+  } else {
+    res
+      .status(400)
+      .json({ message: "Bad Request!, Please provide valid credentials and OTP" });
   }
 };
 module.exports = {
   validateSignupMiddleware,
   validateLoginMiddleware,
+  deleterUserMiddleware,
 };
