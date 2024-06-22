@@ -25,7 +25,7 @@ const storeOtp=(username,email,otp)=>{
 
 // Verifying OTP
 const verifyOtp=(username,otp)=>{
-    const entry=otps.find(ele=>ele.username===username && ele.otp===otp)
+    const entry=otps.find(ele=>(ele.username===username || ele.email===username) && ele.otp===otp)
     if(entry){
         if(entry.expiry-Date.now()>0){
             otps.splice(otps.indexOf(entry),1);
