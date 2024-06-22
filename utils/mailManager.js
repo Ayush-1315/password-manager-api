@@ -23,5 +23,22 @@ const userDeleteMailOptions = (email, otp) => ({
     `,
 });
 
-// ADD MAIL OPTIONS FOR PASSWORD DELETION, PASSWORD UPDATE, WELCOME MAIL, FORGOT PASSWORD
-module.exports = { transporter,userDeleteMailOptions };
+const userDeletedMailOptions=(email)=>({
+  from: "Anzen Server<responseserver276@gmail.com>",
+  to: email,
+  subject: "Account Deleted !",
+  html: `
+    <h1>Your account associated with ${email} has been removed from Anzen Database</h1>    `,
+})
+
+//Welcome mail
+
+const welcomeMailOptions=(email)=>({
+  from: "Anzen Server<responseserver276@gmail.com>",
+  to: email,
+  subject: "Welcome to the Anzen Server !",
+  html: `
+    <h1>Welcome to Anzen Server</h1>    `,
+})
+// ADD MAIL OPTIONS  FORGOT PASSWORD
+module.exports = { transporter,userDeleteMailOptions,userDeletedMailOptions,welcomeMailOptions };

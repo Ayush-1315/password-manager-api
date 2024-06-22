@@ -9,7 +9,8 @@ const {
   deleteUserService,
 } = require("../database-controllers/usersDatabase.controllers");
 
-const {verifyOtp}=require('../utils/otpManager')
+const {verifyOtp}=require('../utils/otpManager');
+const {userDeleted,welcomeToServer}=require('./otpControllers.controller')
 //Signup service
 
 const signupService = async (req, res) => {
@@ -26,6 +27,7 @@ const signupService = async (req, res) => {
       secret,
       { expiresIn: "2h" }
     );
+    welcomeToServer(newUser.email)
     res.status(201).json({
       message: "User created successfully",
       data: {
@@ -88,7 +90,9 @@ const userDeleteService = async (req, res) => {
   try {
     if(verifyOtp(username,otp)){
       const deleteUser = await deleteUserService(username, password, id,email);
+      console.log(deleteUser)
     if (deleteUser) {
+      userDeleted(deleteUser.email)
       res.status(200).json({
         message: "Account deleted",
         data: {
@@ -104,7 +108,7 @@ const userDeleteService = async (req, res) => {
     }
     }
   } catch (e) {
-
+    console.log(e)
     switch (e.status) {
       case 400: res.status(400).json({message:'Invalid OTP'})
         break;

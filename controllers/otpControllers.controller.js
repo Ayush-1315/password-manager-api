@@ -1,5 +1,6 @@
 const {otpGenerator,storeOtp}=require('../utils/otpManager');
-const {transporter,userDeleteMailOptions}=require('../utils/mailManager');
+const {transporter,userDeleteMailOptions, userDeletedMailOptions, welcomeMailOptions}=require('../utils/mailManager');
+
 const deleteUserOTP=(req,res)=>{
     const {email}=req.body;
     const {username}=req.body
@@ -18,4 +19,28 @@ const deleteUserOTP=(req,res)=>{
     })
 }
 
-module.exports={deleteUserOTP}
+// User deleted validation
+const userDeleted=(email)=>{
+    transporter.sendMail(userDeletedMailOptions(email),(error,info)=>{
+        if(error){
+            console.log(`Error sending email: ${error}`)
+            res.status(500).json({message:'Error sending email'})
+        }
+        else{   
+            console.log(`Email sent: ${info.response}`)
+        }
+    })
+}
+// Wlecome Mail
+const welcomeToServer=(email)=>{
+    transporter.sendMail(welcomeMailOptions(email),(error,info)=>{
+        if(error){
+            console.log(`Error sending email: ${error}`)
+            res.status(500).json({message:'Error sending email'})
+        }
+        else{   
+            console.log(`Email sent: ${info.response}`)
+        }
+    })
+}
+module.exports={deleteUserOTP,userDeleted,welcomeToServer}
