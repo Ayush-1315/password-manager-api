@@ -7,10 +7,18 @@ const {
   userSignupService,
   userLoginService,
   deleteUserService,
+  forgotPasswordService,
+  findUser,
 } = require("../database-controllers/usersDatabase.controllers");
 
-const {verifyOtp}=require('../utils/otpManager');
-const {userDeleted,welcomeToServer}=require('./otpControllers.controller')
+const { verifyOtp } = require("../utils/otpManager");
+const {
+  userDeleted,
+  welcomeToServer,
+  sendPasswordResetOtp,
+} = require("./otpControllers.controller");
+
+
 //Signup service
 
 const signupService = async (req, res) => {
@@ -27,7 +35,7 @@ const signupService = async (req, res) => {
       secret,
       { expiresIn: "2h" }
     );
-    welcomeToServer(newUser.email)
+    welcomeToServer(newUser.email);
     res.status(201).json({
       message: "User created successfully",
       data: {
@@ -35,7 +43,7 @@ const signupService = async (req, res) => {
         user: {
           id: newUser._id,
           username: newUser.username,
-          email: newUser.email,
+          email: newUser.email
         },
       },
     });
@@ -84,40 +92,90 @@ const loginService = async (req, res) => {
 //Delete user service
 
 const userDeleteService = async (req, res) => {
-  const { username, password,email,otp } = req.body;
-  const id=req.params.id;
+  const { username, password, email, otp } = req.body;
+  const id = req.params.id;
 
   try {
-    if(verifyOtp(username,otp)){
-      const deleteUser = await deleteUserService(username, password, id,email);
-      console.log(deleteUser)
-    if (deleteUser) {
-      userDeleted(deleteUser.email)
-      res.status(200).json({
-        message: "Account deleted",
-        data: {
-          id: deleteUser._id,
-          username: deleteUser.username,
-          email:deleteUser.email,
-        },
-      });
-    } else if (deleteUser === null) {
-      res.status(404).json({ message: "User not found !" });
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (verifyOtp(username, otp)) {
+      const deleteUser = await deleteUserService(username, password, id, email);
+      if (deleteUser !== null) {
+        userDeleted(deleteUser.email);
+        res.status(200).json({
+          message: "Account deleted",
+          data: {
+            id: deleteUser._id,
+            username: deleteUser.username,
+            email: deleteUser.email,
+          },
+        });
+      } else if (deleteUser === null) {
+        res.status(404).json({ message: "User not found !" });
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
     }
   } catch (e) {
-    console.log(e)
     switch (e.status) {
-      case 400: res.status(400).json({message:'Invalid OTP'})
+      case 400:
+        res.status(400).json({ message: "Invalid OTP" });
         break;
-      
-      case 403: res.status(403).json({message:'OTP Expired'})
-    
-      default:res.status(500).json({message:'Internal server error'})
+
+      case 403:
+        res.status(403).json({ message: "OTP Expired" });
+
+      default:
+        res.status(500).json({ message: "Internal server error" });
         break;
     }
   }
 };
-module.exports = { signupService, loginService, userDeleteService };
+const sendOTPforgotPassword = async (req, res) => {
+  const { user } = req.body;
+  try {
+    const foundUser = await findUser(user);
+    sendPasswordResetOtp(foundUser.email, foundUser.username, res);
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+    }
+  }
+};
+
+// Forgot password service
+
+const forgotPasswordController = async (req, res) => {
+  const { username, newPassword, otp } = req.body;
+  try {
+    if (verifyOtp(username, otp)) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+      const updatePassword = await forgotPasswordService(
+        username,
+        hashedPassword
+      );
+        res.status(204).json({ message: "Password updated successfully" });
+    }
+  } catch (e) {
+    switch (e.status) {
+      case 400:
+        res.status(400).json({ message: "Invalid OTP" });
+        break;
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+    }
+  }
+};
+module.exports = {
+  signupService,
+  loginService,
+  userDeleteService,
+  forgotPasswordController,
+  sendOTPforgotPassword,
+};

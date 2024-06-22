@@ -14,7 +14,17 @@ const requestToDeleteUserOTP=(req,res,next)=>{
         res.status(400).json({message:"Please provide username and registered email"})
 }
 
+const forgotPasswordRequest=(req,res,next)=>{
+    const user=req.body.user?.trim();
+    if(user){
+        next();
+    }
+    else{
+        res.status(400).json({message:"Please provide username or registered email"})
+    }
+}
 module.exports={
     OTPValidationMiddleware,
-    requestToDeleteUserOTP
+    requestToDeleteUserOTP,
+    forgotPasswordRequest
 }

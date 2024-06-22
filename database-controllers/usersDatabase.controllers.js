@@ -36,10 +36,10 @@ const userLoginService = async (user, password) => {
   }
 };
 //const User Delete
-const deleteUserService = async (username, password, id,email) => {
+const deleteUserService = async (username, password, id, email) => {
   try {
     const foundUser = await User.findOne({ username });
-    if (foundUser && foundUser.email===email) {
+    if (foundUser && foundUser.email === email) {
       const isPasswordValid = await validatePassword(
         password,
         foundUser.password
@@ -50,11 +50,50 @@ const deleteUserService = async (username, password, id,email) => {
       } else {
         return false;
       }
-    }else{
-        return null
+    } else {
+      return null;
     }
   } catch (e) {
     throw e;
   }
 };
-module.exports = { userSignupService, userLoginService, deleteUserService };
+
+//Update password with username or email
+const forgotPasswordService = async (user,newPassword) => {
+  try {
+    const foundUser = await User.findOne({
+      $or: [{ username: user }, { email: user }],
+    });
+    if(foundUser){
+      Object.assign(foundUser,{password:newPassword});
+      const updatedUser=foundUser.save();
+      return updatedUser;
+    }
+    else{
+      const error=new Error('User does not exist');
+      error.status=404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+// Find user by username or email
+const findUser=async(user)=>{
+  try{
+    const foundUser = await User.findOne({
+      $or: [{ username: user }, { email: user }],
+    });
+    if(foundUser){
+      return foundUser;
+    }
+    else{
+      const error=new Error('User does not exist');
+      error.status=404;
+      throw error;
+    }
+  }catch(e){
+    throw e;
+  }
+}
+module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser};
