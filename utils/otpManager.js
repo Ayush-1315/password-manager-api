@@ -13,7 +13,7 @@ const storeOtp=(username,email,otp)=>{
         username,
         email,
         otp,
-        expiry:Date.now()+180000,// Valid for 3 minutes,
+        expiry:Date.now()+300000,// Valid for 5 minutes,
     }
     const emailIndex=otps.findIndex((ele)=>ele.email===email);
     if(emailIndex!==-1){
