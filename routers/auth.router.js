@@ -12,7 +12,7 @@ userRouter.post('/signup',validateSignupMiddleware,signupService);
 userRouter.post('/login',validateLoginMiddleware,loginService);
 
 //OTP Verification for user deletion
-userRouter.post('/send-delete-otp',tokenValidatorMiddleware,requestToDeleteUserOTP,deleteUserOTP);
+userRouter.post('/send-delete-otp/:id',tokenValidatorMiddleware,requestToDeleteUserOTP,deleteUserOTP);
 userRouter.post('/forgot-password/send-otp',forgotPasswordRequest,sendOTPforgotPassword);
 userRouter.post('/update-password/:id',tokenValidatorMiddleware,validateAndUpdatePasswordMiddleware,updatePassword)
 userRouter.post('/reset-password',OTPValidationMiddleware,validateAndUpdateForgottenPasswordMiddleware,forgotPasswordController)

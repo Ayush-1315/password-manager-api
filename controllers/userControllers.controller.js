@@ -24,7 +24,7 @@ const { hashPassword } = require("../utils/hashPassword");
 const signupService = async (req, res) => {
   const newUserData = req.body;
   try {
-    const hashedPassword = await hashPassword(newUserData.password, salt);
+    const hashedPassword = await hashPassword(newUserData.password);
     const newUser = await userSignupService({
       ...newUserData,
       password: hashedPassword,
@@ -47,11 +47,13 @@ const signupService = async (req, res) => {
       },
     });
   } catch (e) {
-    if (e.code === 11000 && e.keyPattern.email)
+    if (e.code === 11000 && e.keyPattern.email) {
       res.status(409).json({ message: "Email already exists" });
-    else if (e.code === 11000 && e.keyPattern.username)
+    } else if (e.code === 11000 && e.keyPattern.username) {
       res.status(409).json({ message: "Username exists" });
-    else res.status(500).json({ message: "Internal Server Error" });
+    } else {
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 };
 
@@ -150,7 +152,7 @@ const forgotPasswordController = async (req, res) => {
   const { username, newPassword, otp } = req.body;
   try {
     if (verifyOtp(username, otp)) {
-      const hashedPassword = await hashPassword(newPassword, salt);
+      const hashedPassword = await hashPassword(newPassword);
       await forgotPasswordService(username, hashedPassword);
       res.status(204).json({ message: "Password updated successfully" });
     }
