@@ -1,8 +1,8 @@
 const express=require('express');
 const userRouter=express.Router();
 
-const {signupService,loginService, userDeleteService, forgotPasswordController, sendOTPforgotPassword, updatePassword}=require('../controllers/userControllers.controller');
-const { validateSignupMiddleware,validateLoginMiddleware, deleterUserMiddleware, validateAndUpdateForgottenPasswordMiddleware, validateAndUpdatePasswordMiddleware} = require('../middlewares/users.middleware');
+const {signupService,loginService, userDeleteService, forgotPasswordController, sendOTPforgotPassword, updatePassword, userProfile}=require('../controllers/userControllers.controller');
+const { validateSignupMiddleware,validateLoginMiddleware, deleterUserMiddleware, validateAndUpdateForgottenPasswordMiddleware, validateAndUpdatePasswordMiddleware, userProfileMiddleware} = require('../middlewares/users.middleware');
 const { tokenValidatorMiddleware } = require('../middlewares/auth.middleware');
 const { OTPValidationMiddleware,requestToDeleteUserOTP, forgotPasswordRequest} = require('../middlewares/otpValidation.middleware');
 const {deleteUserOTP}=require("../controllers/otpControllers.controller");
@@ -17,5 +17,7 @@ userRouter.post('/forgot-password/send-otp',forgotPasswordRequest,sendOTPforgotP
 userRouter.post('/update-password/:id',tokenValidatorMiddleware,validateAndUpdatePasswordMiddleware,updatePassword)
 userRouter.post('/reset-password',OTPValidationMiddleware,validateAndUpdateForgottenPasswordMiddleware,forgotPasswordController)
 //DELETE Routes
+
+userRouter.get('/users/:id',tokenValidatorMiddleware,userProfileMiddleware,userProfile)
 userRouter.delete("/authorize-delete/:id",tokenValidatorMiddleware,OTPValidationMiddleware,deleterUserMiddleware,userDeleteService)
 module.exports={userRouter};

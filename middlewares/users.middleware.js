@@ -160,10 +160,23 @@ const validateAndUpdatePasswordMiddleware = (req, res, next) => {
       });
   }
 };
+
+//Middleware to validate user id for user profile
+
+const userProfileMiddleware=(req,res,next)=>{
+  const userId=req.params.id?.trim();
+  if(userId){
+    next();
+  }
+  else{
+    res.status(400).json({message:"User ID is required"})
+  }
+}
 module.exports = {
   validateSignupMiddleware,
   validateLoginMiddleware,
   deleterUserMiddleware,
   validateAndUpdateForgottenPasswordMiddleware,
   validateAndUpdatePasswordMiddleware,
+  userProfileMiddleware
 };

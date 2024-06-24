@@ -9,6 +9,7 @@ const {
   forgotPasswordService,
   findUser,
   updatePasswordService,
+  userProfileService,
 } = require("../database-controllers/usersDatabase.controllers");
 
 const { verifyOtp } = require("../utils/otpManager");
@@ -200,6 +201,35 @@ const updatePassword = async (req, res) => {
     }
   }
 };
+// User Profile
+
+const userProfile = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await userProfileService(id);
+    res.status(200).json({
+      message: "User found",
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          createdAt: user.createdAt,
+          totalSavedPassword: user.passwords.length,
+        },
+      },
+    });
+  } catch (e) {
+    if(e.status===404){
+      res.status(200).json({message:"User does not exist"});
+    }
+    else{
+      res.status(500).json({message:"Internal Server Error"});
+    }
+  }
+};
 module.exports = {
   signupService,
   loginService,
@@ -207,4 +237,5 @@ module.exports = {
   forgotPasswordController,
   sendOTPforgotPassword,
   updatePassword,
+  userProfile
 };

@@ -123,4 +123,21 @@ const updatePasswordService=async(username,password,newPassword)=>{
     throw e;
   }
 }
-module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser,updatePasswordService};
+// User Profile
+
+const userProfileService=async(id)=>{
+try{
+  const userProfile=await User.findById(id);
+  if(userProfile){
+    return userProfile;
+  }
+  else{
+    const error=new Error('User does not exist');
+    error.status=404;
+    throw error;
+  }
+}catch(e){
+  throw e;
+}
+}
+module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser,updatePasswordService,userProfileService};
