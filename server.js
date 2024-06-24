@@ -1,6 +1,7 @@
 require("./db");
 const express=require('express');
 const cors=require('cors');
+const helmet=require('helmet'); 
 const bodyParser=require('body-parser')
 const app=express();
 
@@ -18,4 +19,16 @@ app.get('/',(req,res)=>{
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}))
+app.use(helmet());
 app.use('/password-manager',userRouter);
+
+//Global Error Handler
+app.use((err,req,res,next)=>{
+    console.log(err.stack);
+    res.status(500).json({message:'Internal Server Error'});
+})
+
+//Global 404 Handler
+app.use((req,res)=>{
+    res.status(404).json({message:'Route not found'});
+})
