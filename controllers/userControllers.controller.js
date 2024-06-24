@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 
 const secret = process.env.SECRET;
 
@@ -9,6 +8,7 @@ const {
   deleteUserService,
   forgotPasswordService,
   findUser,
+  updatePasswordService,
 } = require("../database-controllers/usersDatabase.controllers");
 
 const { verifyOtp } = require("../utils/otpManager");
@@ -17,15 +17,14 @@ const {
   welcomeToServer,
   sendPasswordResetOtp,
 } = require("./otpControllers.controller");
-
+const { hashPassword } = require("../utils/hashPassword");
 
 //Signup service
 
 const signupService = async (req, res) => {
   const newUserData = req.body;
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newUserData.password, salt);
+    const hashedPassword = await hashPassword(newUserData.password, salt);
     const newUser = await userSignupService({
       ...newUserData,
       password: hashedPassword,
@@ -43,7 +42,7 @@ const signupService = async (req, res) => {
         user: {
           id: newUser._id,
           username: newUser.username,
-          email: newUser.email
+          email: newUser.email,
         },
       },
     });
@@ -151,13 +150,9 @@ const forgotPasswordController = async (req, res) => {
   const { username, newPassword, otp } = req.body;
   try {
     if (verifyOtp(username, otp)) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(newPassword, salt);
-      const updatePassword = await forgotPasswordService(
-        username,
-        hashedPassword
-      );
-        res.status(204).json({ message: "Password updated successfully" });
+      const hashedPassword = await hashPassword(newPassword, salt);
+      await forgotPasswordService(username, hashedPassword);
+      res.status(204).json({ message: "Password updated successfully" });
     }
   } catch (e) {
     switch (e.status) {
@@ -172,10 +167,42 @@ const forgotPasswordController = async (req, res) => {
     }
   }
 };
+
+//Update Password
+
+const updatePassword = async (req, res) => {
+  const { username, password, newPassword } = req.body;
+  try {
+    const newHashedPassword = await hashPassword(newPassword);
+    const savedData = await updatePasswordService(
+      username,
+      password,
+      newHashedPassword
+    );
+    if (savedData) {
+      res.status(204).json({ message: "Password updated successfully" });
+    }
+  } catch (e) {
+    switch (e.status) {
+      case 401:
+        res.status(401).json({ message: "Incorrect Password" });
+        break;
+      case 404:
+        res
+          .status(404)
+          .json({ message: `No user with username: <${username}> exists.` });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error !" });
+        break;
+    }
+  }
+};
 module.exports = {
   signupService,
   loginService,
   userDeleteService,
   forgotPasswordController,
   sendOTPforgotPassword,
+  updatePassword,
 };

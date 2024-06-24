@@ -58,7 +58,7 @@ const deleteUserService = async (username, password, id, email) => {
   }
 };
 
-//Update password with username or email
+//Reset password with username or email
 const forgotPasswordService = async (user,newPassword) => {
   try {
     const foundUser = await User.findOne({
@@ -96,4 +96,31 @@ const findUser=async(user)=>{
     throw e;
   }
 }
-module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser};
+
+//Update password
+const updatePasswordService=async(username,password,newPassword)=>{
+  try{
+    const foundUser=await User.findOne({username});
+    if(foundUser){
+      const checkPassword=await validatePassword(password,foundUser.password);
+      if(checkPassword){
+        Object.assign(foundUser,{password:newPassword});
+        const updatedUser=await foundUser.save();
+        return updatedUser;
+      }
+      else{
+        const error=new Error('Unauthorized Access');
+        error.status=401;
+        throw error
+      }
+    }
+    else{
+      const error=new Error('User not found !');
+      error.status=404;
+      throw error;
+    }
+  }catch(e){
+    throw e;
+  }
+}
+module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser,updatePasswordService};

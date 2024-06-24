@@ -112,15 +112,52 @@ const validateAndUpdateForgottenPasswordMiddleware = (req, res, next) => {
     } else {
       // Respond with error if newPassword is too short
       res.status(400).json({
-        error: "InvalidPassword",
+        error: "Invalid Password",
         message: "The password must be at least 8 characters long.",
       });
     }
   } else {
-     // Respond with error if username or newPassword is missing
+    // Respond with error if username or newPassword is missing
     res
       .status(401)
       .json({ error: "Unauthorized", message: "Invalid username or password" });
+  }
+};
+
+//Middleware to validate password updation
+
+const validateAndUpdatePasswordMiddleware = (req, res, next) => {
+  const username = req.body.username?.trim();
+  const password = req.body.password?.trim();
+  const newPassword = req.body.newPassword?.trim();
+
+  if ((username, password, newPassword)) {
+    if (password.length >= 8) {
+      if (newPassword.length >= 8) {
+        next();
+      } else {
+        // Respond with error if newPassword is too short
+        res.status(400).json({
+          error: "Invalid Password",
+          message: "The new password must be at least 8 characters long.",
+        });
+      }
+    }
+    else{
+       // Respond with error if newPassword is too short
+       res.status(400).json({
+        error: "Invalid Password",
+        message: "The password must be at least 8 characters long.",
+      });
+    }
+  } else {
+    // Respond with error if username or newPassword is missing
+    res
+      .status(400)
+      .json({
+        error: "Bad Request",
+        message: "Username, password or newpassword fields are missing",
+      });
   }
 };
 module.exports = {
@@ -128,4 +165,5 @@ module.exports = {
   validateLoginMiddleware,
   deleterUserMiddleware,
   validateAndUpdateForgottenPasswordMiddleware,
+  validateAndUpdatePasswordMiddleware,
 };
