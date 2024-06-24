@@ -172,11 +172,26 @@ const userProfileMiddleware=(req,res,next)=>{
     res.status(400).json({message:"User ID is required"})
   }
 }
+// Middleware to validate check username 
+
+const checkUsernameMiddleware=(req,res,next)=>{
+  const username=req.body.username?.trim();
+  if(username && username.length>3){
+    next();
+  }
+  else if(username.length<=3){
+    res.status(400).json({message:"username should be atleast 4 characters long."})
+  }
+  else{
+    res.status(400).json({message:"Please enter a valid username"})
+  }
+}
 module.exports = {
   validateSignupMiddleware,
   validateLoginMiddleware,
   deleterUserMiddleware,
   validateAndUpdateForgottenPasswordMiddleware,
   validateAndUpdatePasswordMiddleware,
-  userProfileMiddleware
+  userProfileMiddleware,
+  checkUsernameMiddleware
 };

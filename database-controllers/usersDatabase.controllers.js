@@ -59,19 +59,18 @@ const deleteUserService = async (username, password, id, email) => {
 };
 
 //Reset password with username or email
-const forgotPasswordService = async (user,newPassword) => {
+const forgotPasswordService = async (user, newPassword) => {
   try {
     const foundUser = await User.findOne({
       $or: [{ username: user }, { email: user }],
     });
-    if(foundUser){
-      Object.assign(foundUser,{password:newPassword});
-      const updatedUser=foundUser.save();
+    if (foundUser) {
+      Object.assign(foundUser, { password: newPassword });
+      const updatedUser = foundUser.save();
       return updatedUser;
-    }
-    else{
-      const error=new Error('User does not exist');
-      error.status=404;
+    } else {
+      const error = new Error("User does not exist");
+      error.status = 404;
       throw error;
     }
   } catch (e) {
@@ -79,65 +78,83 @@ const forgotPasswordService = async (user,newPassword) => {
   }
 };
 // Find user by username or email
-const findUser=async(user)=>{
-  try{
+const findUser = async (user) => {
+  try {
     const foundUser = await User.findOne({
       $or: [{ username: user }, { email: user }],
     });
-    if(foundUser){
+    if (foundUser) {
       return foundUser;
-    }
-    else{
-      const error=new Error('User does not exist');
-      error.status=404;
+    } else {
+      const error = new Error("User does not exist");
+      error.status = 404;
       throw error;
     }
-  }catch(e){
+  } catch (e) {
     throw e;
   }
-}
+};
 
 //Update password
-const updatePasswordService=async(username,password,newPassword)=>{
-  try{
-    const foundUser=await User.findOne({username});
-    if(foundUser){
-      const checkPassword=await validatePassword(password,foundUser.password);
-      if(checkPassword){
-        Object.assign(foundUser,{password:newPassword});
-        const updatedUser=await foundUser.save();
+const updatePasswordService = async (username, password, newPassword) => {
+  try {
+    const foundUser = await User.findOne({ username });
+    if (foundUser) {
+      const checkPassword = await validatePassword(
+        password,
+        foundUser.password
+      );
+      if (checkPassword) {
+        Object.assign(foundUser, { password: newPassword });
+        const updatedUser = await foundUser.save();
         return updatedUser;
+      } else {
+        const error = new Error("Unauthorized Access");
+        error.status = 401;
+        throw error;
       }
-      else{
-        const error=new Error('Unauthorized Access');
-        error.status=401;
-        throw error
-      }
-    }
-    else{
-      const error=new Error('User not found !');
-      error.status=404;
+    } else {
+      const error = new Error("User not found !");
+      error.status = 404;
       throw error;
     }
-  }catch(e){
+  } catch (e) {
     throw e;
   }
-}
+};
 // User Profile
 
-const userProfileService=async(id)=>{
-try{
-  const userProfile=await User.findById(id);
-  if(userProfile){
-    return userProfile;
+const userProfileService = async (id) => {
+  try {
+    const userProfile = await User.findById(id);
+    if (userProfile) {
+      return userProfile;
+    } else {
+      const error = new Error("User does not exist");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
   }
-  else{
-    const error=new Error('User does not exist');
-    error.status=404;
-    throw error;
+};
+
+//Check username availablity
+const checkUsername = async (username) => {
+  try {
+    const user = await User.findOne({ username });
+    return user ? false : true;
+  } catch (e) {
+    throw e;
   }
-}catch(e){
-  throw e;
-}
-}
-module.exports = { userSignupService, userLoginService, deleteUserService,forgotPasswordService,findUser,updatePasswordService,userProfileService};
+};
+module.exports = {
+  userSignupService,
+  userLoginService,
+  deleteUserService,
+  forgotPasswordService,
+  findUser,
+  updatePasswordService,
+  userProfileService,
+  checkUsername
+};

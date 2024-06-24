@@ -10,6 +10,7 @@ const {
   findUser,
   updatePasswordService,
   userProfileService,
+  checkUsername,
 } = require("../database-controllers/usersDatabase.controllers");
 
 const { verifyOtp } = require("../utils/otpManager");
@@ -230,6 +231,21 @@ const userProfile = async (req, res) => {
     }
   }
 };
+
+const checkUsernameService=async(req,res)=>{
+  const username=req.body.username;
+  try{
+    const isUserAvailable=await checkUsername(username);
+    if(isUserAvailable){
+      res.status(200).json({message:"Username is available",available:true});
+    }
+    else{
+      res.status(200).json({message:"Username is not available",available:false});
+    }
+  }catch(e){
+    res.status(500).json({message:"Internal server error !"})
+  }
+}
 module.exports = {
   signupService,
   loginService,
@@ -237,5 +253,6 @@ module.exports = {
   forgotPasswordController,
   sendOTPforgotPassword,
   updatePassword,
-  userProfile
+  userProfile,
+  checkUsernameService
 };
