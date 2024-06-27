@@ -9,7 +9,7 @@ const {deleteUserOTP}=require("../controllers/otpControllers.controller");
 
 //POST Requests
 userRouter.post('/signup',validateSignupMiddleware,signupService);
-userRouter.post('/login',validateLoginMiddleware,loginService);
+userRouter.get('/login',validateLoginMiddleware,loginService);
 
 //OTP Verification for user deletion
 userRouter.post('/send-delete-otp/:id',tokenValidatorMiddleware,requestToDeleteUserOTP,deleteUserOTP);

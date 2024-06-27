@@ -8,20 +8,22 @@ const app=express();
 const PORT=process.env.PORT;
 
 const {userRouter}=require('./routers/auth.router');
+const { addPasswordToUserService } = require("./controllers/passwordController.controller");
+const passwordRouter = require("./routers/password.router");
 
 app.listen(PORT,()=>{
  console.log(`Server is running on PORT: ${PORT}`)
 })
 
 app.get('/',(req,res)=>{
-    res.send("You are developing backend api for password manager")
+    res.send("You are Anzen Server")
 })
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}))
 app.use(helmet());
 app.use('/password-manager',userRouter);
-
+app.use('/passwords',passwordRouter);
 //Global Error Handler
 app.use((err,req,res,next)=>{
     console.log(err.stack);
