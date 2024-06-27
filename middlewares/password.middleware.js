@@ -65,11 +65,32 @@ const validateSearchPasswords=(req,res,next)=>{
   else{
     res.status(400).json({message:"Please provide a valid user ID and seach value"})
   }
+}
 
+//Middleware to validate password update
+
+const validatePasswordUpdateMiddleware=(req,res,next)=>{
+  const userId=req.params.id?.trim();
+  const passId=req.body._id?.trim();
+  const username=req.body.username?.trim();
+  const password=req.body.accPassword?.trim();
+  const description=req.body.description;
+  const platform=req.body.platform?.trim();
+
+  if(userId && passId &&username&& password&& platform){
+    next();
+  }
+  else if(!userId){
+    res.status(400).json({message:"User Id is missing."})
+  }
+  else{
+    res.status(400).json({message:"User ID, username, account password, description and platform are required fields"})
+  }
 }
 module.exports = {
   validateNewPasswordCredentialsMiddleware,
   validateGetAccountInfoMiddleware,
   validateGetAllPasswordsMiddleware,
-  validateSearchPasswords
+  validateSearchPasswords,
+  validatePasswordUpdateMiddleware
 };

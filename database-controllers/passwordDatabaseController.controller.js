@@ -111,9 +111,33 @@ const getSearchedPasswords = async (userId, key) => {
     throw e;
   }
 };
+//Update Password
+const updatePassword = async (userId, passId, update) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const findPassword = user.passwords.id(passId);
+      if (findPassword) {
+        Object.assign(findPassword, update);
+        return await user.save();
+      } else {
+        const error = new Error("Password");
+        error.status = 404;
+        throw error;
+      }
+    } else {
+      const error = new Error("User does not exist");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
 module.exports = {
   addPasswordToUser,
   getAccountData,
   getAllPasswords,
   getSearchedPasswords,
+  updatePassword,
 };
