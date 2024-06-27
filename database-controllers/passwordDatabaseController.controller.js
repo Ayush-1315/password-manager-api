@@ -62,14 +62,48 @@ const getAllPasswords = async (userId, index) => {
   try {
     const foundUser = await User.findById(userId);
     if (foundUser) {
-      const startIndex = (index - 1) === 0 ? 0 :( index - 1) * 10;
+      const startIndex = index - 1 === 0 ? 0 : (index - 1) * 10;
       const lastIndex = index * 10;
+      const results = foundUser.passwords.slice(startIndex, lastIndex);
       return {
-        data: foundUser.passwords.slice(startIndex, lastIndex),
-        moreData: foundUser.passwords.length > index*10,
+        data: results.map((ele) => ({
+          _id: ele._id,
+          username: ele.username,
+          platform: ele.platform,
+          description: ele.description,
+        })),
+        moreData: foundUser.passwords.length > index * 10,
       };
     } else {
       const error = new Error("Username not found");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
+//Searched Passwords
+
+const getSearchedPasswords = async (userId, key) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const results = user.passwords.filter(
+        ({ username, platform, description }) =>
+          username.toLocaleLowerCase().includes(key) ||
+          platform.toLocaleLowerCase().includes(key) ||
+          description.toLowerCase().includes(key)
+      );
+      return results.map((ele) => ({
+        _id: ele._id,
+        username: ele.username,
+        platform: ele.platform,
+        description: ele.description,
+      }));
+    } else {
+      const error = new Error("User does not exist");
       error.status = 404;
       throw error;
     }
@@ -81,4 +115,5 @@ module.exports = {
   addPasswordToUser,
   getAccountData,
   getAllPasswords,
+  getSearchedPasswords,
 };

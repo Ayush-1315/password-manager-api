@@ -50,8 +50,26 @@ const validateGetAllPasswordsMiddleware = (req, res, next) => {
       .status(400)
       .json({ message: "Please provide a valid user id and page number." });
 };
+//Middleware to validate search passwords
+const validateSearchPasswords=(req,res,next)=>{
+  const userId=req.params.id;
+  const search=req.query.search?.trim();
+
+  if(userId && search.length!==0){
+    next();
+  }
+
+  else if(search){
+    res.status(400).json({message:"Search cannot be blank"});
+  }
+  else{
+    res.status(400).json({message:"Please provide a valid user ID and seach value"})
+  }
+
+}
 module.exports = {
   validateNewPasswordCredentialsMiddleware,
   validateGetAccountInfoMiddleware,
   validateGetAllPasswordsMiddleware,
+  validateSearchPasswords
 };

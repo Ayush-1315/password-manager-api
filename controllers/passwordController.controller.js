@@ -2,6 +2,7 @@ const {
   addPasswordToUser,
   getAccountData,
   getAllPasswords,
+  getSearchedPasswords,
 } = require("../database-controllers/passwordDatabaseController.controller");
 const { encryptPassword, decryptPassword } = require("../utils/cryptoPassword");
 
@@ -65,7 +66,7 @@ const getAllPasswordsService = async (req, res) => {
   const page = parseInt(req.query.page);
   try {
     const passwords = await getAllPasswords(userId, page);
-    res.status(200).json({ message: "Saved Passwords", data: passwords });
+    res.status(200).json({ message: "Saved Passwords", ...passwords });
   } catch (e) {
     switch (e.status) {
       case 404:
@@ -79,8 +80,26 @@ const getAllPasswordsService = async (req, res) => {
     }
   }
 };
+
+//Search Passwords
+const getSearchedPasswordsService=async(req,res)=>{
+  const userId=req.params.id;
+  const search=req.query.search.toLowerCase();
+  try{
+    const searchedPasswords=await getSearchedPasswords(userId,search);
+    res.status(200).json({message:"Searched results",data:searchedPasswords})
+  }catch(e){
+    switch (e.status){
+      case 404: res.status(404).json({message:"User does not exist."})
+      break;
+      default: res.status(500).json({message:"Internal server error."});
+      break;
+    }
+  }
+}
 module.exports = {
   addPasswordToUserService,
   getPasswordInfoService,
   getAllPasswordsService,
+  getSearchedPasswordsService
 };
