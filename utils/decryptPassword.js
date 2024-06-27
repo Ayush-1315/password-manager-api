@@ -2,9 +2,9 @@ const bcrypt=require('bcrypt');
 const validatePassword=async(requestedPassword, dbPassword)=>{
     try{
         const isValid=await bcrypt.compare(requestedPassword,dbPassword);
-        return isValid
+        return isValid;
     }catch(e){
-        throw new Error(e)
+        throw e
     }
 }
 module.exports= validatePassword

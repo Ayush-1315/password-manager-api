@@ -1,5 +1,3 @@
-const bcrypt = require("bcrypt");
-
 const User = require("../models/user.model");
 const validatePassword = require("../utils/decryptPassword");
 
@@ -32,7 +30,7 @@ const userLoginService = async (user, password) => {
       return null;
     }
   } catch (e) {
-    throw e;
+      throw e;
   }
 };
 //const User Delete

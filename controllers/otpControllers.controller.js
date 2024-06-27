@@ -32,7 +32,7 @@ const sendPasswordResetOtp=(email,username,res)=>{
     })
 }
 // User deleted validation
-const userDeleted=(email)=>{
+const userDeleted=(email,res)=>{
     transporter.sendMail(userDeletedMailOptions(email),(error,info)=>{
         if(error){
             console.log(`Error sending email: ${error}`)
@@ -44,10 +44,11 @@ const userDeleted=(email)=>{
     })
 }
 // Wlecome Mail
-const welcomeToServer=(email)=>{
+const welcomeToServer=(email,res)=>{
     transporter.sendMail(welcomeMailOptions(email),(error,info)=>{
         if(error){
             console.log(`Error sending email: ${error}`)
+            if (!res.headersSent)
             res.status(500).json({message:'Error sending email'})
         }
         else{   

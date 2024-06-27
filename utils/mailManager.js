@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host:'smtp.gmail.com',
   port: 465,
   secure: true,
   auth: {
@@ -10,7 +11,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAIL_PASSWORD,
   },
 });
-
 const userDeleteMailOptions = (email, otp) => ({
   from: "Anzen Server<responseserver276@gmail.com>",
   to: email,

@@ -3,10 +3,12 @@ const jwt=require('jsonwebtoken')
 
 const decodeToken=(token)=>{
     try{
-        const decoded=jwt.decode(token,process.env.SECRET);
+        const decoded=jwt.verify(token,process.env.SECRET);
         return decoded;
     }catch(e){
-        throw new Error('Invald token')
+       const error=new Error('Invalid token');
+       error.status=401;
+       throw error;
     }
 }
 
@@ -37,7 +39,12 @@ const tokenValidatorMiddleware=(req,res,next)=>{
             res.status(401).json({message: 'Unauthorized Access'})
         }
     }catch(e){
-        res.status(401).json({message:'Unauthorised access, please add a valid Token'})
+        switch(e.status){
+            case 401:res.status(401).json({message:'Unauthorised access, token expired'})
+            break;
+            default :res.status(401).json({message:'Unauthorised access, please add a valid Token'});
+            break;
+        }
     }
 }
 module.exports={

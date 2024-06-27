@@ -36,7 +36,7 @@ const signupService = async (req, res) => {
       secret,
       { expiresIn: "2h" }
     );
-    welcomeToServer(newUser.email);
+    welcomeToServer(newUser.email,res);
     res.status(201).json({
       message: "User created successfully",
       data: {
@@ -49,6 +49,7 @@ const signupService = async (req, res) => {
       },
     });
   } catch (e) {
+    console.log(e)
     if (e.code === 11000 && e.keyPattern.email) {
       res.status(409).json({ message: "Email already exists" });
     } else if (e.code === 11000 && e.keyPattern.username) {
@@ -102,7 +103,7 @@ const userDeleteService = async (req, res) => {
     if (verifyOtp(username, otp)) {
       const deleteUser = await deleteUserService(username, password, id, email);
       if (deleteUser !== null) {
-        userDeleted(deleteUser.email);
+        userDeleted(deleteUser.email,res);
         res.status(200).json({
           message: "Account deleted",
           data: {
