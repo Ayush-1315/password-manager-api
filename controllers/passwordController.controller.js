@@ -4,6 +4,7 @@ const {
   getAllPasswords,
   getSearchedPasswords,
   updatePassword,
+  deletePassword,
 } = require("../database-controllers/passwordDatabaseController.controller");
 const { encryptPassword, decryptPassword } = require("../utils/cryptoPassword");
 
@@ -104,7 +105,7 @@ const getSearchedPasswordsService=async(req,res)=>{
 const updatePasswordService=async(req,res)=>{
   const userId=req.params.id;
   const {accPassword,username,description,platform}=req.body;
-  const passId=req.body._id;
+  const passId=req.params.passId;
   try{
     const encryptedPassword = encryptPassword(accPassword);
     const passwordUpdate = {
@@ -128,10 +129,31 @@ const updatePasswordService=async(req,res)=>{
     }
   }
 }
+// Delete Password
+
+const deletePasswordService=async(req,res)=>{
+  const userId=req.params.id;
+  const passId=req.params.passId;
+  try{
+    const deletedData=await deletePassword(userId,passId);
+    res.status(204).json({message:"Password deleted successfully"})
+  }catch(e){
+    switch (e.status){
+      case 404: if(e.message.toLowerCase()==='password')
+        res.status(404).json({message:"Account does not exist."})
+      else  
+      res.status(404).json({message:"User does not exist."})
+      break;
+      default: res.status(500).json({message:"Internal server error."});
+      break;
+    }
+  }
+}
 module.exports = {
   addPasswordToUserService,
   getPasswordInfoService,
   getAllPasswordsService,
   getSearchedPasswordsService,
-  updatePasswordService
+  updatePasswordService,
+  deletePasswordService
 };

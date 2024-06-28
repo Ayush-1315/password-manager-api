@@ -71,7 +71,7 @@ const validateSearchPasswords=(req,res,next)=>{
 
 const validatePasswordUpdateMiddleware=(req,res,next)=>{
   const userId=req.params.id?.trim();
-  const passId=req.body._id?.trim();
+  const passId=req.params.passId?.trim();
   const username=req.body.username?.trim();
   const password=req.body.accPassword?.trim();
   const description=req.body.description;

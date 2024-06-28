@@ -134,10 +134,35 @@ const updatePassword = async (userId, passId, update) => {
     throw e;
   }
 };
+
+//Delete Password
+const deletePassword = async (userId, passId) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const foundPassword = user.passwords.id(passId);
+      if (foundPassword) {
+        user.passwords.pull({_id:passId});
+        return await user.save();
+      } else {
+        const error = new Error("Password.");
+        error.status = 404;
+        throw error;
+      }
+    } else {
+      const error = new Error("User does not exist.");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
 module.exports = {
   addPasswordToUser,
   getAccountData,
   getAllPasswords,
   getSearchedPasswords,
   updatePassword,
+  deletePassword,
 };
