@@ -7,7 +7,8 @@ const addPasswordToUser = async (userId, newPassword) => {
     if (user) {
       const checkSavedPassword = user.passwords.findIndex(
         ({ username, platform }) =>
-          username === newPassword.username && platform === newPassword.platform
+          username === newPassword.username &&
+          platform === newPassword.platform,
       );
       if (checkSavedPassword === -1) {
         user.passwords.push(newPassword);
@@ -35,13 +36,23 @@ const getAccountData = async (userId, passwordId, userPassword) => {
       const user = await User.findById(userId);
       const password = user.passwords.find(({ _id }) => _id.equals(passwordId));
       if (password !== null && password !== undefined) {
-        const passwordData = {
-          id: password._id,
-          platform: password.platform,
-          password: password.password,
-          username: password.username,
-          description: password.description,
-        };
+        const passwordData =
+          user.role === "admin"
+            ? {
+                id: password._id,
+                platform: password.platform,
+                password: password.password,
+                username: password.username,
+                description: password.description,
+                remindAfterDays: password.remindAfterDays,
+              }
+            : {
+                id: password._id,
+                platform: password.platform,
+                password: password.password,
+                username: password.username,
+                description: password.description,
+              };
         return passwordData;
       } else {
         const error = new Error("Accout does not exist !");
@@ -94,7 +105,7 @@ const getSearchedPasswords = async (userId, key) => {
         ({ username, platform, description }) =>
           username.toLocaleLowerCase().includes(key) ||
           platform.toLocaleLowerCase().includes(key) ||
-          description.toLowerCase().includes(key)
+          description.toLowerCase().includes(key),
       );
       return results.map((ele) => ({
         _id: ele._id,
@@ -142,7 +153,7 @@ const deletePassword = async (userId, passId) => {
     if (user) {
       const foundPassword = user.passwords.id(passId);
       if (foundPassword) {
-        user.passwords.pull({_id:passId});
+        user.passwords.pull({ _id: passId });
         return await user.save();
       } else {
         const error = new Error("Password.");

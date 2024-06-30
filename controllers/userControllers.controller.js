@@ -24,7 +24,14 @@ const { hashPassword } = require("../utils/hashPassword");
 //Signup service
 
 const signupService = async (req, res) => {
-  const newUserData = req.body;
+  const { username, email, password, firstName, lastName } = req.body;
+  const newUserData = {
+    username,
+    email,
+    password,
+    firstName,
+    lastName,
+  };
   try {
     const hashedPassword = await hashPassword(newUserData.password);
     const newUser = await userSignupService({
@@ -34,9 +41,9 @@ const signupService = async (req, res) => {
     const token = jwt.sign(
       { username: newUser.username, id: newUser._id },
       secret,
-      { expiresIn: "2h" }
+      { expiresIn: "2h" },
     );
-    welcomeToServer(newUser.email,res);
+    welcomeToServer(newUser.email, res);
     res.status(201).json({
       message: "User created successfully",
       data: {
@@ -49,7 +56,7 @@ const signupService = async (req, res) => {
       },
     });
   } catch (e) {
-    console.log(e)
+    console.log(e);
     if (e.code === 11000 && e.keyPattern.email) {
       res.status(409).json({ message: "Email already exists" });
     } else if (e.code === 11000 && e.keyPattern.username) {
@@ -71,7 +78,7 @@ const loginService = async (req, res) => {
         const token = await jwt.sign(
           { username: userData.username, id: userData._id },
           secret,
-          { expiresIn: "2h" }
+          { expiresIn: "2h" },
         );
         res.status(200).json({
           message: "User Found",
@@ -103,7 +110,7 @@ const userDeleteService = async (req, res) => {
     if (verifyOtp(username, otp)) {
       const deleteUser = await deleteUserService(username, password, id, email);
       if (deleteUser !== null) {
-        userDeleted(deleteUser.email,res);
+        userDeleted(deleteUser.email, res);
         res.status(200).json({
           message: "Account deleted",
           data: {
@@ -182,7 +189,7 @@ const updatePassword = async (req, res) => {
     const savedData = await updatePasswordService(
       username,
       password,
-      newHashedPassword
+      newHashedPassword,
     );
     if (savedData) {
       res.status(204).json({ message: "Password updated successfully" });
@@ -224,29 +231,31 @@ const userProfile = async (req, res) => {
       },
     });
   } catch (e) {
-    if(e.status===404){
-      res.status(200).json({message:"User does not exist"});
-    }
-    else{
-      res.status(500).json({message:"Internal Server Error"});
+    if (e.status === 404) {
+      res.status(200).json({ message: "User does not exist" });
+    } else {
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 };
 
-const checkUsernameService=async(req,res)=>{
-  const username=req.body.username;
-  try{
-    const isUserAvailable=await checkUsername(username);
-    if(isUserAvailable){
-      res.status(200).json({message:"Username is available",available:true});
+const checkUsernameService = async (req, res) => {
+  const username = req.body.username;
+  try {
+    const isUserAvailable = await checkUsername(username);
+    if (isUserAvailable) {
+      res
+        .status(200)
+        .json({ message: "Username is available", available: true });
+    } else {
+      res
+        .status(200)
+        .json({ message: "Username is not available", available: false });
     }
-    else{
-      res.status(200).json({message:"Username is not available",available:false});
-    }
-  }catch(e){
-    res.status(500).json({message:"Internal server error !"})
+  } catch (e) {
+    res.status(500).json({ message: "Internal server error !" });
   }
-}
+};
 module.exports = {
   signupService,
   loginService,
@@ -255,5 +264,5 @@ module.exports = {
   sendOTPforgotPassword,
   updatePassword,
   userProfile,
-  checkUsernameService
+  checkUsernameService,
 };

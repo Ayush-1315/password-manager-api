@@ -15,6 +15,7 @@ const addPasswordToUserService = async (req, res) => {
   const password = req.body.password;
   const username = req.body.username;
   const description = req.body.description;
+  const remindAfterDays = parseInt(req.body.remindAfterDays) || -1;
 
   try {
     const encryptedPassword = encryptPassword(password);
@@ -23,10 +24,12 @@ const addPasswordToUserService = async (req, res) => {
       password: encryptedPassword,
       username,
       description,
+      remindAfterDays,
     };
     const savedUserPassoword = await addPasswordToUser(userId, newPassword);
     res.status(204).json({ message: "Password added" });
   } catch (e) {
+
     switch (e.status) {
       case 404:
         res.status(404).josn({ message: "User does not exist !" });
@@ -84,29 +87,33 @@ const getAllPasswordsService = async (req, res) => {
 };
 
 //Search Passwords
-const getSearchedPasswordsService=async(req,res)=>{
-  const userId=req.params.id;
-  const search=req.query.search.toLowerCase();
-  try{
-    const searchedPasswords=await getSearchedPasswords(userId,search);
-    res.status(200).json({message:"Searched results",data:searchedPasswords})
-  }catch(e){
-    switch (e.status){
-      case 404: res.status(404).json({message:"User does not exist."})
-      break;
-      default: res.status(500).json({message:"Internal server error."});
-      break;
+const getSearchedPasswordsService = async (req, res) => {
+  const userId = req.params.id;
+  const search = req.query.search.toLowerCase();
+  try {
+    const searchedPasswords = await getSearchedPasswords(userId, search);
+    res
+      .status(200)
+      .json({ message: "Searched results", data: searchedPasswords });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "User does not exist." });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error." });
+        break;
     }
   }
-}
+};
 
 //Update Passwords
 
-const updatePasswordService=async(req,res)=>{
-  const userId=req.params.id;
-  const {accPassword,username,description,platform}=req.body;
-  const passId=req.params.passId;
-  try{
+const updatePasswordService = async (req, res) => {
+  const userId = req.params.id;
+  const { accPassword, username, description, platform } = req.body;
+  const passId = req.params.passId;
+  try {
     const encryptedPassword = encryptPassword(accPassword);
     const passwordUpdate = {
       platform,
@@ -115,45 +122,47 @@ const updatePasswordService=async(req,res)=>{
       description,
     };
 
-    const savedData=await updatePassword(userId,passId,passwordUpdate);
-    res.status(204).json({message:"Password updated successfully"})
-  }catch(e){
-    switch (e.status){
-      case 404: if(e.message.toLowerCase()==='password')
-        res.status(404).json({message:"Account does not exist."})
-      else  
-      res.status(404).json({message:"User does not exist."})
-      break;
-      default: res.status(500).json({message:"Internal server error."});
-      break;
+    const savedData = await updatePassword(userId, passId, passwordUpdate);
+    res.status(204).json({ message: "Password updated successfully" });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        if (e.message.toLowerCase() === "password")
+          res.status(404).json({ message: "Account does not exist." });
+        else res.status(404).json({ message: "User does not exist." });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error." });
+        break;
     }
   }
-}
+};
 // Delete Password
 
-const deletePasswordService=async(req,res)=>{
-  const userId=req.params.id;
-  const passId=req.params.passId;
-  try{
-    const deletedData=await deletePassword(userId,passId);
-    res.status(204).json({message:"Password deleted successfully"})
-  }catch(e){
-    switch (e.status){
-      case 404: if(e.message.toLowerCase()==='password')
-        res.status(404).json({message:"Account does not exist."})
-      else  
-      res.status(404).json({message:"User does not exist."})
-      break;
-      default: res.status(500).json({message:"Internal server error."});
-      break;
+const deletePasswordService = async (req, res) => {
+  const userId = req.params.id;
+  const passId = req.params.passId;
+  try {
+    const deletedData = await deletePassword(userId, passId);
+    res.status(204).json({ message: "Password deleted successfully" });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        if (e.message.toLowerCase() === "password")
+          res.status(404).json({ message: "Account does not exist." });
+        else res.status(404).json({ message: "User does not exist." });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error." });
+        break;
     }
   }
-}
+};
 module.exports = {
   addPasswordToUserService,
   getPasswordInfoService,
   getAllPasswordsService,
   getSearchedPasswordsService,
   updatePasswordService,
-  deletePasswordService
+  deletePasswordService,
 };

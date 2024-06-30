@@ -19,7 +19,6 @@ const userLoginService = async (user, password) => {
       $or: [{ username: user }, { email: user }],
     });
     if (userData) {
-      // const isValidPassword=await bcrypt.compare(password,userData.password)
       const isValidPassword = await validatePassword(
         password,
         userData.password
