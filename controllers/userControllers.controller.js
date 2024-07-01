@@ -57,7 +57,6 @@ const signupService = async (req, res) => {
       },
     });
   } catch (e) {
-    console.log(e);
     if (e.code === 11000 && e.keyPattern.email) {
       res.status(409).json({ message: "Email already exists" });
     } else if (e.code === 11000 && e.keyPattern.username) {

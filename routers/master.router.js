@@ -10,14 +10,17 @@ const {
   resetUserPasswordController,
   adminExpiringAccountsController,
   toggleLastAccessedController,
+  searchUserController,
 } = require("../controllers/masterController.controller");
+const { tokenValidatorMiddleware } = require("../middlewares/auth.middleware");
 
-masterRouter.delete("/delete-user/:id", deleteUserController);
-masterRouter.get("/dashboard/:id", adminDashboardController);
-masterRouter.get("/user/:id", viewUserAccountController);
-masterRouter.get("/user/:id/:accountId", getAllUserPasswordController);
-masterRouter.get("/user-password/:id", getUserPasswordController);
-masterRouter.get("/accounts/:id", adminExpiringAccountsController);
-masterRouter.post("/reset-password/:id", resetUserPasswordController);
-masterRouter.put("/last-accessed/:id/:passId", toggleLastAccessedController);
+masterRouter.delete("/delete-user/:id",tokenValidatorMiddleware,deleteUserController);
+masterRouter.get("/dashboard/:id",tokenValidatorMiddleware,adminDashboardController);
+masterRouter.get("/user/:id",tokenValidatorMiddleware,viewUserAccountController);
+masterRouter.get("/user/:id/:accountId",tokenValidatorMiddleware,getAllUserPasswordController);
+masterRouter.get("/user-password/:id",tokenValidatorMiddleware,getUserPasswordController);
+masterRouter.get("/accounts/:id",adminExpiringAccountsController);
+masterRouter.get("/users/:id",tokenValidatorMiddleware,searchUserController)
+masterRouter.post("/reset-password/:id",tokenValidatorMiddleware,resetUserPasswordController);
+masterRouter.put("/last-accessed/:id/:passId",toggleLastAccessedController);
 module.exports = masterRouter;

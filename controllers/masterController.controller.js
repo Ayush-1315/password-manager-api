@@ -8,6 +8,7 @@ const {
   resetUserPassword,
   adminExpiringAccounts,
   toggleLastAccessed,
+  searchUser,
 } = require("../database-controllers/masterDatabase.controller");
 
 const { decryptPassword } = require("../utils/cryptoPassword");
@@ -143,7 +144,7 @@ const resetUserPasswordController = async (req, res) => {
   try {
     const hashedPassword = await hashPassword(newPassword);
     const userData = await resetUserPassword(userId, accountId, hashedPassword);
-    res.status(200).json({ message: "Success", data: userData });
+    res.status(204).json({ message: "Success", data: userData });
   } catch (e) {
     switch (e.status) {
       case 401:
@@ -204,6 +205,28 @@ const toggleLastAccessedController = async (req, res) => {
     }
   }
 };
+
+//Search User
+const searchUserController=async(req,res)=>{
+  const userId=req.params.id;
+  const search=req.query.search;
+  try{
+    const response=await searchUser(userId,search);
+    res.status(200).json({message:"Results found",data:response})
+  }catch(e){
+    switch (e.status) {
+      case 401:
+        res.status(401).json({ message: "Unauthorized Access" });
+        break;
+      case 404:
+        res.status(404).json({ message: "Account not found" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+        break;
+    }
+  }
+}
 module.exports = {
   deleteUserController,
   adminDashboardController,
@@ -213,4 +236,5 @@ module.exports = {
   resetUserPasswordController,
   adminExpiringAccountsController,
   toggleLastAccessedController,
+  searchUserController
 };

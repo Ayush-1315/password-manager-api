@@ -7,7 +7,8 @@ const deleteUser = async (deleteId, userId) => {
     if (isAdmin) {
       const deleteUser = await User.findByIdAndDelete(deleteId);
       if (deleteUser) {
-        return deleteUser;
+        const {_id,firstName,lastName,username}=deleteUser;
+        return ({_id,firstName,lastName,username});
       } else {
         const error = new Error("Account not found");
         error.status = 404;
@@ -85,11 +86,21 @@ const getAllUserPasswords = async (accountId, userId) => {
     if (isAdmin) {
       const user = await User.findById(accountId);
       if (user) {
-        return user.passwords.map(({ username, platform, description }) => ({
+        const passwords=user.passwords.map(({ _id,username, platform, description }) => ({
+          _id,
           username,
           platform,
           description,
-        }));
+        }))
+        return ({
+          _id:user.id,
+          username:user.username,
+          firstName:user.firstName,
+          lastName:user.lastName,
+          role:user.role,
+          createdAt:user.createdAt,
+          passwords
+        });
       } else {
         const error = new Error("Account not found");
         error.status = 404;
@@ -230,6 +241,29 @@ const toggleLastAccessed = async (userID, passID) => {
     throw e;
   }
 };
+//Search User
+const searchUser=async(userID,search)=>{
+  try {
+    const isAdmin = await getUserRole(userID);
+    if (isAdmin) {
+      const regex=new RegExp(search,'i')
+      const user = await User.find({username:regex});
+      if (user) {
+        return (user.map(({_id,username,firstName,lastName})=>({_id,username,firstName,lastName})))
+      } else {
+        const error = new Error("Account not found");
+        error.status = 404;
+        throw error;
+      }
+    } else {
+      const error = new Error("Unauthorized");
+      error.status = 401;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+}
 module.exports = {
   deleteUser,
   adminDashboard,
@@ -239,4 +273,5 @@ module.exports = {
   resetUserPassword,
   adminExpiringAccounts,
   toggleLastAccessed,
+  searchUser
 };
