@@ -186,6 +186,24 @@ const checkUsernameMiddleware=(req,res,next)=>{
     res.status(400).json({message:"Please enter a valid username"})
   }
 }
+const validateProfileUpdateMiddleware=(req,res,next)=>{
+  const userId=req.params.id?.trim();
+  const firstName=req.body.firstName?.trim();
+  const lastName=req.body.lastName;
+  const email=req.body.email?.trim();
+
+  if(userId){
+    if(firstName && email && email.includes('@') && email.includes('.com')){
+      next();
+    }
+    else{
+      res.status(400).json({message:"firstName, lastName and email are the required fields."})
+    }
+  }
+  else{
+    res.status(400).json({message:"Please provide a valid userId"})
+  }
+}
 module.exports = {
   validateSignupMiddleware,
   validateLoginMiddleware,
@@ -193,5 +211,6 @@ module.exports = {
   validateAndUpdateForgottenPasswordMiddleware,
   validateAndUpdatePasswordMiddleware,
   userProfileMiddleware,
-  checkUsernameMiddleware
+  checkUsernameMiddleware,
+  validateProfileUpdateMiddleware
 };

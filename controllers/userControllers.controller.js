@@ -11,6 +11,7 @@ const {
   updatePasswordService,
   userProfileService,
   checkUsername,
+  updateProfileService,
 } = require("../database-controllers/usersDatabase.controllers");
 
 const { verifyOtp } = require("../utils/otpManager");
@@ -256,6 +257,24 @@ const checkUsernameService = async (req, res) => {
     res.status(500).json({ message: "Internal server error !" });
   }
 };
+
+//Update Profile
+const updateProfileController=async(req,res)=>{
+  const userId=req.params.id;
+  const {email,firstName,lastName}=req.body;
+  try{
+    const newData={email,firstName,lastName};
+    const response=await updateProfileService(userId,newData);
+    res.status(201).json({message:"Success",data:response});
+  }catch(e){
+    switch(e.status){
+      case 404:res.status(404).json({message:"Account not found"});
+      break;
+      default:res.status(500).json({message:"Internal server error"});
+      break;
+    }
+  }
+}
 module.exports = {
   signupService,
   loginService,
@@ -265,4 +284,5 @@ module.exports = {
   updatePassword,
   userProfile,
   checkUsernameService,
+  updateProfileController
 };

@@ -145,6 +145,29 @@ const checkUsername = async (username) => {
     throw e;
   }
 };
+
+//Update profile
+const updateProfileService=async(id,newBody)=>{
+  try{
+    const user=await User.findById(id);
+    if(user){
+      Object.assign(user,newBody);
+      const result=await user.save();
+      return ({
+        username:result.username,
+        emailId:result.email,
+        firstName:result.firstName,
+        lastName:result.lastName,
+      })
+    }else{
+      const error=new Error('User details not found');
+      error.status=404;
+      throw error;
+    }
+  }catch(e){
+    throw e;
+  }
+}
 module.exports = {
   userSignupService,
   userLoginService,
@@ -153,5 +176,6 @@ module.exports = {
   findUser,
   updatePasswordService,
   userProfileService,
-  checkUsername
+  checkUsername,
+  updateProfileService
 };
