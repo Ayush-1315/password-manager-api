@@ -47,9 +47,8 @@ const validateSignupMiddleware = (req, res, next) => {
 
 // Middleware to validate login credentials
 const validateLoginMiddleware = (req, res, next) => {
-  const user = req.body.username?.trim();
-  const password = req.body.password?.trim();
-
+  const user = req.body.username;
+  const password = req.body.password;
   // Check if username and password are present and of type string
   if (
     user &&
@@ -142,50 +141,46 @@ const validateAndUpdatePasswordMiddleware = (req, res, next) => {
           message: "The new password must be at least 8 characters long.",
         });
       }
-    }
-    else{
-       // Respond with error if newPassword is too short
-       res.status(400).json({
+    } else {
+      // Respond with error if newPassword is too short
+      res.status(400).json({
         error: "Invalid Password",
         message: "The password must be at least 8 characters long.",
       });
     }
   } else {
     // Respond with error if username or newPassword is missing
-    res
-      .status(400)
-      .json({
-        error: "Bad Request",
-        message: "Username, password or newpassword fields are missing",
-      });
+    res.status(400).json({
+      error: "Bad Request",
+      message: "Username, password or newpassword fields are missing",
+    });
   }
 };
 
 //Middleware to validate user id for user profile
 
-const userProfileMiddleware=(req,res,next)=>{
-  const userId=req.params.id?.trim();
-  if(userId){
+const userProfileMiddleware = (req, res, next) => {
+  const userId = req.params.id?.trim();
+  if (userId) {
     next();
+  } else {
+    res.status(400).json({ message: "User ID is required" });
   }
-  else{
-    res.status(400).json({message:"User ID is required"})
-  }
-}
-// Middleware to validate check username 
+};
+// Middleware to validate check username
 
-const checkUsernameMiddleware=(req,res,next)=>{
-  const username=req.body.username?.trim();
-  if(username && username.length>3){
+const checkUsernameMiddleware = (req, res, next) => {
+  const username = req.body.username?.trim();
+  if (username && username.length > 3) {
     next();
+  } else if (username.length <= 3) {
+    res
+      .status(400)
+      .json({ message: "username should be atleast 4 characters long." });
+  } else {
+    res.status(400).json({ message: "Please enter a valid username" });
   }
-  else if(username.length<=3){
-    res.status(400).json({message:"username should be atleast 4 characters long."})
-  }
-  else{
-    res.status(400).json({message:"Please enter a valid username"})
-  }
-}
+};
 const validateProfileUpdateMiddleware=(req,res,next)=>{
   const userId=req.params.id?.trim();
   const firstName=req.body.firstName?.trim();

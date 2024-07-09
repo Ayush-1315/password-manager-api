@@ -227,6 +227,7 @@ const userProfile = async (req, res) => {
           lastName: user.lastName,
           createdAt: user.createdAt,
           totalSavedPassword: user.passwords.length,
+          role: user.role,
         },
       },
     });
@@ -256,7 +257,6 @@ const checkUsernameService = async (req, res) => {
     res.status(500).json({ message: "Internal server error !" });
   }
 };
-
 //Update Profile
 const updateProfileController=async(req,res)=>{
   const userId=req.params.id;
