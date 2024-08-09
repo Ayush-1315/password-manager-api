@@ -10,7 +10,12 @@ const PORT = process.env.PORT;
 const { userRouter } = require("./routers/auth.router");
 const passwordRouter = require("./routers/password.router");
 const masterRouter = require("./routers/master.router");
-
+const corsOptions = {
+    origin: "https://anzen-password.netlify.app", // Replace with your frontend URL
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204
+};
 app.listen(PORT, () => {
     console.log(`Server is running on PORT: ${PORT}`);
 });
@@ -18,7 +23,7 @@ app.listen(PORT, () => {
 app.get("/", (req, res) => {
     res.send("You are using Anzen Server");
 });
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(helmet());
