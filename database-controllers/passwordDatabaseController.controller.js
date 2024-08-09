@@ -13,7 +13,18 @@ const addPasswordToUser = async (userId, newPassword) => {
       if (checkSavedPassword === -1) {
         user.passwords.push(newPassword);
         await user.save();
-        return user;
+        const { _id, username, platform, description, remindAfterDays } =
+          user.passwords[user.passwords.length - 1];
+        return user.role === "admin"
+          ? {
+              _id,
+              username,
+              platform,
+              description,
+              remindAfterDays,
+              website,
+            }
+          : { _id, username, platform, description, site };
       } else {
         const error = new Error("Username already associated with a password.");
         error.status = 409;
@@ -39,18 +50,20 @@ const getAccountData = async (userId, passwordId, userPassword) => {
         const passwordData =
           user.role === "admin"
             ? {
-                id: password._id,
+                _id: password._id,
                 platform: password.platform,
                 password: password.password,
                 username: password.username,
                 description: password.description,
+                website: password.website,
                 remindAfterDays: password.remindAfterDays,
               }
             : {
-                id: password._id,
+                _id: password._id,
                 platform: password.platform,
                 password: password.password,
                 username: password.username,
+                website: password.website,
                 description: password.description,
               };
         return passwordData;
@@ -73,17 +86,18 @@ const getAllPasswords = async (userId, index) => {
   try {
     const foundUser = await User.findById(userId);
     if (foundUser) {
-      const startIndex = index - 1 === 0 ? 0 : (index - 1) * 10;
-      const lastIndex = index * 10;
+      const startIndex = index - 1 === 0 ? 0 : (index - 1) * 16;
+      const lastIndex = index * 16;
       const results = foundUser.passwords.slice(startIndex, lastIndex);
       return {
         data: results.map((ele) => ({
           _id: ele._id,
           username: ele.username,
           platform: ele.platform,
+          website: ele.website,
           description: ele.description,
         })),
-        moreData: foundUser.passwords.length > index * 10,
+        totalPasswords: foundUser.passwords.length,
       };
     } else {
       const error = new Error("Username not found");
@@ -111,6 +125,7 @@ const getSearchedPasswords = async (userId, key) => {
         _id: ele._id,
         username: ele.username,
         platform: ele.platform,
+        website: ele.website,
         description: ele.description,
       }));
     } else {
@@ -130,7 +145,27 @@ const updatePassword = async (userId, passId, update) => {
       const findPassword = user.passwords.id(passId);
       if (findPassword) {
         Object.assign(findPassword, update);
-        return await user.save();
+        await user.save();
+        if (user.role === "admin") {
+          console.log(findPassword);
+          return {
+            _id: passId,
+            username: update.username,
+            platform: update.platform,
+            description: update.description,
+            website: update.website,
+            remindAfterDays:
+              update?.remindAfterDays || findPassword?.remindAfterDays,
+          };
+        } else {
+          return {
+            _id: passId,
+            username: update.username,
+            platform: update.platform,
+            website: update.website,
+            description: update.description,
+          };
+        }
       } else {
         const error = new Error("Password");
         error.status = 404;
@@ -156,12 +191,107 @@ const deletePassword = async (userId, passId) => {
         user.passwords.pull({ _id: passId });
         return await user.save();
       } else {
-        const error = new Error("Password.");
+        const error = new Error("Password");
         error.status = 404;
         throw error;
       }
     } else {
       const error = new Error("User does not exist.");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+const getBasicPasswordInfo = async (userId, passwordId) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const foundPassword = user.passwords.id(passwordId);
+      if (foundPassword) {
+        const { _id, username, platform, description, website } = foundPassword;
+        return { _id, username, platform, description, website };
+      } else {
+        const error = new Error("Password");
+        error.status = 404;
+        throw error;
+      }
+    } else {
+      const error = new Error("User does not exist");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
+//Add password to favourites
+const addToFavourites = async (userId, passId) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const password = user.passwords.id(passId);
+      if (password) {
+        if (user.favourites.id(passId)) {
+          return true;
+        } else {
+          user.favourites.push(password);
+          return await user.save();
+        }
+      } else {
+        const error = new Error("Password not found");
+        error.status = 403;
+        throw error;
+      }
+    } else {
+      const error = new Error("User not found");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+//Remove from favourites
+const removeFromFavourites = async (userId, passId) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const foundPassword = user.favourites.id(passId);
+      if (foundPassword) {
+        user.favourites.pull({ _id: passId });
+        return user.save();
+      } else {
+        return false;
+      }
+    } else {
+      const error = new Error("User not found");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+//Get all Favourites
+const getAllFavourites = async (userId) => {
+  try {
+    const foundUser = await User.findById(userId);
+    if (foundUser) {
+      return {
+        data: foundUser.favourites.map((ele) => ({
+          _id: ele._id,
+          username: ele.username,
+          platform: ele.platform,
+          description: ele.description,
+          website: ele.website,
+        })),
+        totalPasswords: foundUser.favourites.length,
+      };
+    } else {
+      const error = new Error("Username not found");
       error.status = 404;
       throw error;
     }
@@ -176,4 +306,8 @@ module.exports = {
   getSearchedPasswords,
   updatePassword,
   deletePassword,
+  getBasicPasswordInfo,
+  addToFavourites,
+  removeFromFavourites,
+  getAllFavourites,
 };

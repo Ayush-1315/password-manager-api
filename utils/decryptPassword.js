@@ -1,4 +1,4 @@
-const bcrypt=require('bcrypt');
+const bcrypt=require('bcryptjs');
 const validatePassword=async(requestedPassword, dbPassword)=>{
     try{
         const isValid=await bcrypt.compare(requestedPassword,dbPassword);

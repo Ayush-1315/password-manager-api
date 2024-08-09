@@ -7,11 +7,9 @@ const validateNewPasswordCredentialsMiddleware = (req, res, next) => {
   if ((platform, username, password)) {
     next();
   } else {
-    res
-      .status(400)
-      .json({
-        message: "Platform, Username and Password are minimum required fields",
-      });
+    res.status(400).json({
+      message: "Platform, Username and Password are minimum required fields",
+    });
   }
 };
 //Middleware to search a unique password by id
@@ -22,12 +20,10 @@ const validateGetAccountInfoMiddleware = (req, res, next) => {
   if (userId && passId && userPassword) {
     next();
   } else if (!userId && !passId && !userPassword) {
-    res
-      .status(400)
-      .json({
-        message:
-          "User password, account ID and user ID are minimum required fields.",
-      });
+    res.status(400).json({
+      message:
+        "User password, account ID and user ID are minimum required fields.",
+    });
   } else if (!passId && !userId && userPassword) {
     res
       .status(400)
@@ -51,46 +47,58 @@ const validateGetAllPasswordsMiddleware = (req, res, next) => {
       .json({ message: "Please provide a valid user id and page number." });
 };
 //Middleware to validate search passwords
-const validateSearchPasswords=(req,res,next)=>{
-  const userId=req.params.id;
-  const search=req.query.search?.trim();
+const validateSearchPasswords = (req, res, next) => {
+  const userId = req.params.id;
+  const search = req.query.search?.trim();
 
-  if(userId && search.length!==0){
+  if (userId && search.length !== 0) {
     next();
+  } else if (search) {
+    res.status(400).json({ message: "Search cannot be blank" });
+  } else {
+    res
+      .status(400)
+      .json({ message: "Please provide a valid user ID and seach value" });
   }
-
-  else if(search){
-    res.status(400).json({message:"Search cannot be blank"});
-  }
-  else{
-    res.status(400).json({message:"Please provide a valid user ID and seach value"})
-  }
-}
+};
 
 //Middleware to validate password update
 
-const validatePasswordUpdateMiddleware=(req,res,next)=>{
-  const userId=req.params.id?.trim();
-  const passId=req.params.passId?.trim();
-  const username=req.body.username?.trim();
-  const password=req.body.accPassword?.trim();
-  const description=req.body.description;
-  const platform=req.body.platform?.trim();
+const validatePasswordUpdateMiddleware = (req, res, next) => {
+  const userId = req.params.id?.trim();
+  const passId = req.params.passId?.trim();
+  const username = req.body.username?.trim();
+  const password = req.body.accPassword?.trim();
+  const platform = req.body.platform?.trim();
 
-  if(userId && passId &&username&& password&& platform){
+  if (userId && passId && username && password && platform) {
     next();
+  } else if (!userId) {
+    res.status(400).json({ message: "User Id is missing." });
+  } else {
+    res.status(400).json({
+      message:
+        "User ID, username, account password, description and platform are required fields",
+    });
   }
-  else if(!userId){
-    res.status(400).json({message:"User Id is missing."})
+};
+const validateSearchPassword = (req, res, next) => {
+  const userId = req.params.id?.trim();
+  const passId = req.params.passId?.trim();
+  if (userId && passId) {
+    next();
+  } else if (userId) {
+    res.status(400).json({ message: "Missing user id" });
+  } else {
+    res.status(400).json({ message: "Missing password Id" });
   }
-  else{
-    res.status(400).json({message:"User ID, username, account password, description and platform are required fields"})
-  }
-}
+};
+
 module.exports = {
   validateNewPasswordCredentialsMiddleware,
   validateGetAccountInfoMiddleware,
   validateGetAllPasswordsMiddleware,
   validateSearchPasswords,
-  validatePasswordUpdateMiddleware
+  validatePasswordUpdateMiddleware,
+  validateSearchPassword,
 };

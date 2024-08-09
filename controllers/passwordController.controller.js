@@ -5,6 +5,10 @@ const {
   getSearchedPasswords,
   updatePassword,
   deletePassword,
+  getBasicPasswordInfo,
+  addToFavourites,
+  removeFromFavourites,
+  getAllFavourites,
 } = require("../database-controllers/passwordDatabaseController.controller");
 const { encryptPassword, decryptPassword } = require("../utils/cryptoPassword");
 
@@ -15,6 +19,7 @@ const addPasswordToUserService = async (req, res) => {
   const password = req.body.password;
   const username = req.body.username;
   const description = req.body.description;
+  const website = req.body.site;
   const remindAfterDays = parseInt(req.body.remindAfterDays) || -1;
 
   try {
@@ -24,12 +29,14 @@ const addPasswordToUserService = async (req, res) => {
       password: encryptedPassword,
       username,
       description,
+      website,
       remindAfterDays,
     };
-    const savedUserPassoword = await addPasswordToUser(userId, newPassword);
-    res.status(204).json({ message: "Password added" });
+    const savedUserPassword = await addPasswordToUser(userId, newPassword);
+    res
+      .status(201)
+      .json({ message: "Password added", data: savedUserPassword });
   } catch (e) {
-
     switch (e.status) {
       case 404:
         res.status(404).josn({ message: "User does not exist !" });
@@ -55,7 +62,11 @@ const getPasswordInfoService = async (req, res) => {
     const passwordData = decryptPassword(foundData.password);
     res.status(200).json({ ...foundData, password: passwordData });
   } catch (e) {
+    console.log(req.body.password);
     switch (e.status) {
+      case 401:
+        res.status(401).json({ message: `Invalid Token` });
+        break;
       case 404:
         res.status(404).json({ message: "Account does not exist" });
         break;
@@ -111,7 +122,14 @@ const getSearchedPasswordsService = async (req, res) => {
 
 const updatePasswordService = async (req, res) => {
   const userId = req.params.id;
-  const { accPassword, username, description, platform } = req.body;
+  const {
+    accPassword,
+    username,
+    description,
+    platform,
+    remindAfterDays,
+    website,
+  } = req.body;
   const passId = req.params.passId;
   try {
     const encryptedPassword = encryptPassword(accPassword);
@@ -120,11 +138,16 @@ const updatePasswordService = async (req, res) => {
       password: encryptedPassword,
       username,
       description,
+      remindAfterDays,
+      website,
     };
 
     const savedData = await updatePassword(userId, passId, passwordUpdate);
-    res.status(204).json({ message: "Password updated successfully" });
+    res
+      .status(201)
+      .json({ message: "Password updated successfully", data: savedData });
   } catch (e) {
+    console.log(e);
     switch (e.status) {
       case 404:
         if (e.message.toLowerCase() === "password")
@@ -143,7 +166,7 @@ const deletePasswordService = async (req, res) => {
   const userId = req.params.id;
   const passId = req.params.passId;
   try {
-    const deletedData = await deletePassword(userId, passId);
+    await deletePassword(userId, passId);
     res.status(204).json({ message: "Password deleted successfully" });
   } catch (e) {
     switch (e.status) {
@@ -158,6 +181,87 @@ const deletePasswordService = async (req, res) => {
     }
   }
 };
+const getBasicPasswordDetailsService = async (req, res) => {
+  const userId = req.params.id;
+  const passId = req.params.passId;
+  try {
+    const data = await getBasicPasswordInfo(userId, passId);
+    res.status(200).json({ message: "Success", data });
+  } catch (e) {
+    switch (e.status) {
+      case 404: {
+        if (e.message === "Password") {
+          res.status(404).json({ message: "Password does not exist" });
+        } else res.status(404).json({ message: "Password does not exist" });
+      }
+      default:
+        res.status(500).json({ message: "Internal Server Error" });
+        break;
+    }
+  }
+};
+//Add password to favourites
+const addToFavouritesService = async (req, res) => {
+  const { id, passId } = req.params;
+  try {
+    const favourites = await addToFavourites(id, passId);
+    if (favourites === true)
+      res.status(409).json({ message: "Password exists in favourites" });
+    else res.status(200).json({ message: "Added to favourites" });
+  } catch (e) {
+    console.log(e);
+    switch (e.status) {
+      case 403:
+        res.status(404).json({ message: "Password does not exist" });
+        break;
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+        break;
+    }
+  }
+};
+//remove password from favourites
+const removeFromFavouriteService = async (req, res) => {
+  const { id, passId } = req.params;
+  try {
+    const favourites = await removeFromFavourites(id, passId);
+    if (favourites === false)
+      res
+        .status(404)
+        .json({ message: "Password does not exists in favourites" });
+    else res.status(200).json({ message: "Removed from favourites" });
+  } catch (e) {
+    console.log(e);
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+        break;
+    }
+  }
+};
+
+const getAllFavouritesService = async (req, res) => {
+  const userId = req.parms.id;
+  try {
+    const favourites = await getAllFavourites(userId);
+    res.status(200).json({ message: "Favourites", data: favourites });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal Server Error" });
+        break;
+    }
+  }
+};
 module.exports = {
   addPasswordToUserService,
   getPasswordInfoService,
@@ -165,4 +269,8 @@ module.exports = {
   getSearchedPasswordsService,
   updatePasswordService,
   deletePasswordService,
+  getBasicPasswordDetailsService,
+  addToFavouritesService,
+  removeFromFavouriteService,
+  getAllFavouritesService,
 };

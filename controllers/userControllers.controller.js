@@ -12,6 +12,7 @@ const {
   userProfileService,
   checkUsername,
   updateProfileService,
+  userLoginOTPService,
 } = require("../database-controllers/usersDatabase.controllers");
 
 const { verifyOtp } = require("../utils/otpManager");
@@ -19,6 +20,7 @@ const {
   userDeleted,
   welcomeToServer,
   sendPasswordResetOtp,
+  LoginToServer,
 } = require("./otpControllers.controller");
 const { hashPassword } = require("../utils/hashPassword");
 
@@ -68,35 +70,64 @@ const signupService = async (req, res) => {
 };
 
 //Login Service
-
-const loginService = async (req, res) => {
-  const { user, password } = req.body;
+const loginOTPServiceController = async (req, res) => {
+  const { username, password } = req.body;
   try {
-    const userData = await userLoginService(user.trim(), password.trim());
-    if (userData !== null && userData !== false) {
-      {
-        const token = await jwt.sign(
-          { username: userData.username, id: userData._id },
-          secret,
-          { expiresIn: "2h" },
-        );
-        res.status(200).json({
-          message: "User Found",
-          data: {
-            token,
-            user: {
-              id: userData._id,
-              username: userData.username,
-              email: userData.email,
-            },
-          },
-        });
-      }
-    } else if (userData === null)
-      res.status(404).json({ message: "User not found" });
-    else res.status(401).json({ message: "Unauthorized Access" });
+    const user = await userLoginOTPService(username.trim(), password.trim());
+    if (user) LoginToServer(user.email, user.username, res);
   } catch (e) {
-    res.status(500).json({ message: "Internal server error" });
+    switch (e.status) {
+      case 401:
+        res.status(401).json({ message: "Invalid Credentials" });
+        break;
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal Server Error" });
+        break;
+    }
+  }
+};
+const loginService = async (req, res) => {
+  const { user, password, otp } = req.body;
+  try {
+    if (verifyOtp(user, otp)) {
+      const userData = await userLoginService(user.trim(), password.trim());
+      if (userData !== null && userData !== false) {
+        {
+          const token = await jwt.sign(
+            { username: userData.username, id: userData._id },
+            secret,
+            { expiresIn: "2h" },
+          );
+          res.status(200).json({
+            message: "User Found",
+            data: {
+              token,
+              user: {
+                id: userData._id,
+                username: userData.username,
+                email: userData.email,
+              },
+            },
+          });
+        }
+      } else if (userData === null)
+        res.status(404).json({ message: "User not found" });
+      else res.status(401).json({ message: "Unauthorized Access" });
+    }
+  } catch (e) {
+    console.log(e);
+    switch (e.status) {
+      case 400:
+        if (e.message === "Invalid OTP")
+          res.status(400).json({ message: "Provide a valid OTP" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+        break;
+    }
   }
 };
 
@@ -233,7 +264,7 @@ const userProfile = async (req, res) => {
     });
   } catch (e) {
     if (e.status === 404) {
-      res.status(200).json({ message: "User does not exist" });
+      res.status(404).json({ message: "User does not exist" });
     } else {
       res.status(500).json({ message: "Internal Server Error" });
     }
@@ -258,22 +289,24 @@ const checkUsernameService = async (req, res) => {
   }
 };
 //Update Profile
-const updateProfileController=async(req,res)=>{
-  const userId=req.params.id;
-  const {email,firstName,lastName}=req.body;
-  try{
-    const newData={email,firstName,lastName};
-    const response=await updateProfileService(userId,newData);
-    res.status(201).json({message:"Success",data:response});
-  }catch(e){
-    switch(e.status){
-      case 404:res.status(404).json({message:"Account not found"});
-      break;
-      default:res.status(500).json({message:"Internal server error"});
-      break;
+const updateProfileController = async (req, res) => {
+  const userId = req.params.id;
+  const { email, firstName, lastName } = req.body;
+  try {
+    const newData = { email, firstName, lastName };
+    const response = await updateProfileService(userId, newData);
+    res.status(201).json({ message: "Success", data: response });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "Account not found" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal server error" });
+        break;
     }
   }
-}
+};
 module.exports = {
   signupService,
   loginService,
@@ -283,5 +316,6 @@ module.exports = {
   updatePassword,
   userProfile,
   checkUsernameService,
-  updateProfileController
+  updateProfileController,
+  loginOTPServiceController,
 };

@@ -10,7 +10,8 @@ const {
   updatePassword,
   userProfile,
   checkUsernameService,
-  updateProfileController
+  updateProfileController,
+  loginOTPServiceController,
 } = require("../controllers/userControllers.controller");
 const {
   validateSignupMiddleware,
@@ -20,9 +21,13 @@ const {
   validateAndUpdatePasswordMiddleware,
   userProfileMiddleware,
   checkUsernameMiddleware,
-  validateProfileUpdateMiddleware
+  validateProfileUpdateMiddleware,
+  validateLoginOTPMiddleware,
 } = require("../middlewares/users.middleware");
-const { tokenValidatorMiddleware } = require("../middlewares/auth.middleware");
+const {
+  tokenValidatorMiddleware,
+  decodeToken,
+} = require("../middlewares/auth.middleware");
 const {
   OTPValidationMiddleware,
   requestToDeleteUserOTP,
@@ -32,6 +37,11 @@ const { deleteUserOTP } = require("../controllers/otpControllers.controller");
 
 //POST Requests
 userRouter.post("/signup", validateSignupMiddleware, signupService);
+userRouter.post(
+  "/login-otp",
+  validateLoginOTPMiddleware,
+  loginOTPServiceController,
+);
 userRouter.post("/login", validateLoginMiddleware, loginService);
 
 //OTP Verification for user deletion
@@ -58,7 +68,12 @@ userRouter.post(
   validateAndUpdateForgottenPasswordMiddleware,
   forgotPasswordController,
 );
-userRouter.post('/update-profile/:id',tokenValidatorMiddleware,validateProfileUpdateMiddleware,updateProfileController);
+userRouter.post(
+  "/update-profile/:id",
+  tokenValidatorMiddleware,
+  validateProfileUpdateMiddleware,
+  updateProfileController,
+);
 //DELETE Routes
 
 userRouter.post(
@@ -79,4 +94,28 @@ userRouter.post(
   checkUsernameMiddleware,
   checkUsernameService,
 );
+userRouter.get("/verify-token", (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (token) {
+      const response = decodeToken(token);
+      if (response) {
+        res.status(200).json({ message: "Valid" });
+      }
+    } else {
+      const error = new Error("No token");
+      error.status(400);
+      throw error;
+    }
+  } catch (e) {
+    switch (e.status) {
+      case 400:
+        res.status(400).json({ message: "Provide a valid token" });
+        break;
+      default:
+        res.status(401).json({ message: "Token Expired" });
+        break;
+    }
+  }
+});
 module.exports = { userRouter };

@@ -6,7 +6,6 @@ const decodeToken = (token) => {
     const decoded = jwt.verify(token, process.env.SECRET);
     return decoded;
   } catch (e) {
-    console.log(token);
     const error = new Error("Invalid token");
     error.status = 401;
     throw error;
@@ -29,7 +28,6 @@ const tokenValidatorMiddleware = (req, res, next) => {
     const decoded = decodeToken(token);
     const userId = extractUserIdFromToken(decoded);
     req.user = { userId };
-    console.log(userId);
     if (receivedBodyId === userId || receivedParamsId === userId) {
       next();
     } else if (!receivedBodyId && !receivedParamsId) {
@@ -55,4 +53,5 @@ const tokenValidatorMiddleware = (req, res, next) => {
 };
 module.exports = {
   tokenValidatorMiddleware,
+  decodeToken,
 };

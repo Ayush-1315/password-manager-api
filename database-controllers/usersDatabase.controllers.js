@@ -11,7 +11,32 @@ const userSignupService = async (userData) => {
     throw e;
   }
 };
-
+const userLoginOTPService = async (user, password) => {
+  try {
+    const userData = await User.findOne({
+      $or: [{ username: user }, { email: user }],
+    });
+    if (userData) {
+      const isValidPassword = await validatePassword(
+        password,
+        userData.password,
+      );
+      if (isValidPassword) {
+        return { email: userData.email, username: userData.username };
+      } else {
+        const error = new Error("Unauthorized");
+        error.status = 401;
+        throw error;
+      }
+    } else {
+      const error = new Error("User doesnot exist");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
 //User Login on database
 const userLoginService = async (user, password) => {
   try {
@@ -21,7 +46,7 @@ const userLoginService = async (user, password) => {
     if (userData) {
       const isValidPassword = await validatePassword(
         password,
-        userData.password
+        userData.password,
       );
       if (isValidPassword) return userData;
       else return false;
@@ -29,7 +54,7 @@ const userLoginService = async (user, password) => {
       return null;
     }
   } catch (e) {
-      throw e;
+    throw e;
   }
 };
 //const User Delete
@@ -39,7 +64,7 @@ const deleteUserService = async (username, password, id, email) => {
     if (foundUser && foundUser.email === email) {
       const isPasswordValid = await validatePassword(
         password,
-        foundUser.password
+        foundUser.password,
       );
       if (isPasswordValid) {
         const deletedUser = await User.findByIdAndDelete(id);
@@ -99,7 +124,7 @@ const updatePasswordService = async (username, password, newPassword) => {
     if (foundUser) {
       const checkPassword = await validatePassword(
         password,
-        foundUser.password
+        foundUser.password,
       );
       if (checkPassword) {
         Object.assign(foundUser, { password: newPassword });
@@ -147,27 +172,27 @@ const checkUsername = async (username) => {
 };
 
 //Update profile
-const updateProfileService=async(id,newBody)=>{
-  try{
-    const user=await User.findById(id);
-    if(user){
-      Object.assign(user,newBody);
-      const result=await user.save();
-      return ({
-        username:result.username,
-        emailId:result.email,
-        firstName:result.firstName,
-        lastName:result.lastName,
-      })
-    }else{
-      const error=new Error('User details not found');
-      error.status=404;
+const updateProfileService = async (id, newBody) => {
+  try {
+    const user = await User.findById(id);
+    if (user) {
+      Object.assign(user, newBody);
+      const result = await user.save();
+      return {
+        username: result.username,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
+      };
+    } else {
+      const error = new Error("User details not found");
+      error.status = 404;
       throw error;
     }
-  }catch(e){
+  } catch (e) {
     throw e;
   }
-}
+};
 module.exports = {
   userSignupService,
   userLoginService,
@@ -177,5 +202,6 @@ module.exports = {
   updatePasswordService,
   userProfileService,
   checkUsername,
-  updateProfileService
+  updateProfileService,
+  userLoginOTPService,
 };

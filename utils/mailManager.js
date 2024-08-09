@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  host:'smtp.gmail.com',
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
@@ -77,7 +77,7 @@ const welcomeMailOptions = (email) => ({
         
             <h3>Getting Started:</h3>
             <ol>
-              <li>Login to your account: <a href="https://google.co.in" target="_blank">Log In</a></li>
+              <li>Login to your account: <a href="https://anzen-password.netlify.app/" target="_blank">Log In</a></li>
               <li>Add Your First Password: Navigate to the 'Add Account' section and start securing your accounts.</li>
               <li>Explore Features: Check out our features and customize your settings for an enhanced security experience.</li>
             </ol>
@@ -111,6 +111,23 @@ const generatePasswordResetMailOptions = (email, otp) => ({
         </body>
       </html>`,
 });
+const generateLoginOtpMailOptions = (email, otp) => ({
+  from: "Anzen Server <responseserver276@gmail.com>",
+  to: email,
+  subject: "Login OTP from Anzen Server",
+  html: `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <p>Dear ${email},</p>
+          <p>You are attempting to log in to your Anzen Server account. Please use the following OTP to complete your login:</p>
+          <p style="font-size: 20px; font-weight: bold;">OTP: ${otp}</p>
+          <p>If you did not attempt to log in, please ignore this email or contact our support team immediately at <a href="mailto:support@example.com">support@example.com</a>.</p>
+          <p>Thank you for using Anzen Server.</p>
+          <p>Best regards,<br>
+          The Anzen Server Team</p>
+        </body>
+      </html>`,
+});
 
 // ADD MAIL OPTIONS  FORGOT PASSWORD
 module.exports = {
@@ -119,4 +136,5 @@ module.exports = {
   userDeletedMailOptions,
   welcomeMailOptions,
   generatePasswordResetMailOptions,
+  generateLoginOtpMailOptions,
 };

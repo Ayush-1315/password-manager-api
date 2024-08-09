@@ -49,12 +49,14 @@ const validateSignupMiddleware = (req, res, next) => {
 const validateLoginMiddleware = (req, res, next) => {
   const user = req.body.username;
   const password = req.body.password;
+  const otp = req.body.otp;
   // Check if username and password are present and of type string
   if (
     user &&
     password &&
     typeof user === "string" &&
-    typeof password === "string"
+    typeof password === "string" &&
+    typeof otp === "string"
   ) {
     // Check password length requirement
     if (password.length >= 8) {
@@ -68,12 +70,50 @@ const validateLoginMiddleware = (req, res, next) => {
         message: "Password must be at least 8 characters long.",
       });
     }
+  } else if (otp.length !== 6) {
+    res.status(400).json({
+      message: "Provide a valid OTP",
+    });
   } else {
     // Respond with error if username or password is missing or not of type string
     res.status(401).json({
       error: "Unauthorized",
       message:
-        "Invalid credentials provided. Please verify your username and password.",
+        "Invalid credentials provided. Please verify your username,password and OTP",
+    });
+  }
+};
+const validateLoginOTPMiddleware = (req, res, next) => {
+  const user = req.body.username;
+  const password = req.body.password;
+  // Check if username and password are present and of type string
+  if (
+    user &&
+    typeof user === "string" &&
+    password &&
+    typeof password === "string"
+  ) {
+    // Check password length requirement
+    if (user.trim()) {
+      req.body.user = user.trim();
+      next(); // Proceed to the next middleware
+    } else if (password && typeof password === "string") {
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Provide a password",
+      });
+    } else {
+      // Respond with error if password is too short
+      res.status(400).json({
+        error: "Bad Request",
+        message: "Provide a username",
+      });
+    }
+  } else {
+    // Respond with error if username or password is missing or not of type string
+    res.status(401).json({
+      error: "Unauthorized",
+      message: " Please verify your username .",
     });
   }
 };
@@ -181,24 +221,23 @@ const checkUsernameMiddleware = (req, res, next) => {
     res.status(400).json({ message: "Please enter a valid username" });
   }
 };
-const validateProfileUpdateMiddleware=(req,res,next)=>{
-  const userId=req.params.id?.trim();
-  const firstName=req.body.firstName?.trim();
-  const lastName=req.body.lastName;
-  const email=req.body.email?.trim();
+const validateProfileUpdateMiddleware = (req, res, next) => {
+  const userId = req.params.id?.trim();
+  const firstName = req.body.firstName?.trim();
+  const email = req.body.email?.trim();
 
-  if(userId){
-    if(firstName && email && email.includes('@') && email.includes('.com')){
+  if (userId) {
+    if (firstName && email && email.includes("@") && email.includes(".com")) {
       next();
+    } else {
+      res.status(400).json({
+        message: "firstName, lastName and email are the required fields.",
+      });
     }
-    else{
-      res.status(400).json({message:"firstName, lastName and email are the required fields."})
-    }
+  } else {
+    res.status(400).json({ message: "Please provide a valid userId" });
   }
-  else{
-    res.status(400).json({message:"Please provide a valid userId"})
-  }
-}
+};
 module.exports = {
   validateSignupMiddleware,
   validateLoginMiddleware,
@@ -207,5 +246,6 @@ module.exports = {
   validateAndUpdatePasswordMiddleware,
   userProfileMiddleware,
   checkUsernameMiddleware,
-  validateProfileUpdateMiddleware
+  validateProfileUpdateMiddleware,
+  validateLoginOTPMiddleware,
 };

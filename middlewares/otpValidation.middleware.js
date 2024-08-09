@@ -1,5 +1,6 @@
 const OTPValidationMiddleware=(req,res,next)=>{
     const otp=req.body.otp?.trim();
+    console.log(req.body)
     if(otp.length===6)
         next();
     else

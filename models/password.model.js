@@ -5,12 +5,17 @@ const passwordSchema = new mongoose.Schema({
     iv: { type: String, required: true },
     content: { type: String, required: true },
   },
-  username: { type: String, required: true},
+  site: { type: String },
+  username: { type: String, required: true },
   lastAccessed: { type: Date, default: Date.now },
-  remindAfterDays: { type: Number },
+  remindAfterDays: { type: Number, default: -1 },
   description: {
     type: String,
     default: " ",
+  },
+  website: {
+    type: String,
+    default: "",
   },
 });
 
