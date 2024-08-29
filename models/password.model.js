@@ -17,6 +17,10 @@ const passwordSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  isFavourite: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = { passwordSchema };

@@ -12,6 +12,7 @@ const {
   addToFavouritesService,
   removeFromFavouriteService,
   getAllFavouritesService,
+  userDashboardService,
 } = require("../controllers/passwordController.controller");
 const { tokenValidatorMiddleware } = require("../middlewares/auth.middleware");
 const {
@@ -82,5 +83,10 @@ passwordRouter.get(
   "/favourites/:id",
   tokenValidatorMiddleware,
   getAllFavouritesService,
+);
+passwordRouter.get(
+  "/dashboard/:id",
+  tokenValidatorMiddleware,
+  userDashboardService,
 );
 module.exports = passwordRouter;

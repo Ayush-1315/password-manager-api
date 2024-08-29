@@ -9,6 +9,7 @@ const {
   addToFavourites,
   removeFromFavourites,
   getAllFavourites,
+  userDashboard,
 } = require("../database-controllers/passwordDatabaseController.controller");
 const { encryptPassword, decryptPassword } = require("../utils/cryptoPassword");
 
@@ -21,7 +22,7 @@ const addPasswordToUserService = async (req, res) => {
   const description = req.body.description;
   const website = req.body.site;
   const remindAfterDays = parseInt(req.body.remindAfterDays) || -1;
-
+  console.log(platform, password, username, description, website);
   try {
     const encryptedPassword = encryptPassword(password);
     const newPassword = {
@@ -37,6 +38,7 @@ const addPasswordToUserService = async (req, res) => {
       .status(201)
       .json({ message: "Password added", data: savedUserPassword });
   } catch (e) {
+    console.log(e);
     switch (e.status) {
       case 404:
         res.status(404).josn({ message: "User does not exist !" });
@@ -57,15 +59,16 @@ const getPasswordInfoService = async (req, res) => {
   const passwordId = req.params.passId;
   const userId = req.params.id;
   const userPassword = req.body.password;
+  console.log(req.body, userId, passwordId);
   try {
     const foundData = await getAccountData(userId, passwordId, userPassword);
     const passwordData = decryptPassword(foundData.password);
     res.status(200).json({ ...foundData, password: passwordData });
   } catch (e) {
-    console.log(req.body.password);
+    console.log(e);
     switch (e.status) {
       case 401:
-        res.status(401).json({ message: `Invalid Token` });
+        res.status(401).json({ message: `Unauthorized Access` });
         break;
       case 404:
         res.status(404).json({ message: "Account does not exist" });
@@ -147,7 +150,6 @@ const updatePasswordService = async (req, res) => {
       .status(201)
       .json({ message: "Password updated successfully", data: savedData });
   } catch (e) {
-    console.log(e);
     switch (e.status) {
       case 404:
         if (e.message.toLowerCase() === "password")
@@ -247,10 +249,26 @@ const removeFromFavouriteService = async (req, res) => {
 };
 
 const getAllFavouritesService = async (req, res) => {
-  const userId = req.parms.id;
+  const userId = req.params.id;
   try {
     const favourites = await getAllFavourites(userId);
     res.status(200).json({ message: "Favourites", data: favourites });
+  } catch (e) {
+    switch (e.status) {
+      case 404:
+        res.status(404).json({ message: "User does not exist" });
+        break;
+      default:
+        res.status(500).json({ message: "Internal Server Error" });
+        break;
+    }
+  }
+};
+const userDashboardService = async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const data = await userDashboard(userId);
+    res.status(200).json({ data });
   } catch (e) {
     switch (e.status) {
       case 404:
@@ -273,4 +291,5 @@ module.exports = {
   addToFavouritesService,
   removeFromFavouriteService,
   getAllFavouritesService,
+  userDashboardService,
 };

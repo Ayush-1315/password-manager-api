@@ -13,8 +13,15 @@ const addPasswordToUser = async (userId, newPassword) => {
       if (checkSavedPassword === -1) {
         user.passwords.push(newPassword);
         await user.save();
-        const { _id, username, platform, description, remindAfterDays } =
-          user.passwords[user.passwords.length - 1];
+        const {
+          _id,
+          username,
+          platform,
+          description,
+          remindAfterDays,
+          isFavourite,
+          website,
+        } = user.passwords[user.passwords.length - 1];
         return user.role === "admin"
           ? {
               _id,
@@ -23,8 +30,9 @@ const addPasswordToUser = async (userId, newPassword) => {
               description,
               remindAfterDays,
               website,
+              isFavourite,
             }
-          : { _id, username, platform, description, site };
+          : { _id, username, platform, description, website, isFavourite };
       } else {
         const error = new Error("Username already associated with a password.");
         error.status = 409;
@@ -56,6 +64,7 @@ const getAccountData = async (userId, passwordId, userPassword) => {
                 username: password.username,
                 description: password.description,
                 website: password.website,
+                isFavourite: password.isFavourite,
                 remindAfterDays: password.remindAfterDays,
               }
             : {
@@ -65,6 +74,7 @@ const getAccountData = async (userId, passwordId, userPassword) => {
                 username: password.username,
                 website: password.website,
                 description: password.description,
+                isFavourite: password.isFavourite,
               };
         return passwordData;
       } else {
@@ -95,6 +105,7 @@ const getAllPasswords = async (userId, index) => {
           username: ele.username,
           platform: ele.platform,
           website: ele.website,
+          isFavourite: ele.isFavourite,
           description: ele.description,
         })),
         totalPasswords: foundUser.passwords.length,
@@ -126,6 +137,7 @@ const getSearchedPasswords = async (userId, key) => {
         username: ele.username,
         platform: ele.platform,
         website: ele.website,
+        isFavourite: ele.isFavourite,
         description: ele.description,
       }));
     } else {
@@ -153,6 +165,7 @@ const updatePassword = async (userId, passId, update) => {
             username: update.username,
             platform: update.platform,
             description: update.description,
+            isFavourite: update.isFavourite,
             website: update.website,
             remindAfterDays:
               update?.remindAfterDays || findPassword?.remindAfterDays,
@@ -163,6 +176,7 @@ const updatePassword = async (userId, passId, update) => {
             username: update.username,
             platform: update.platform,
             website: update.website,
+            isFavourite: update.isFavourite,
             description: update.description,
           };
         }
@@ -189,6 +203,9 @@ const deletePassword = async (userId, passId) => {
       const foundPassword = user.passwords.id(passId);
       if (foundPassword) {
         user.passwords.pull({ _id: passId });
+        if (user.favourites.id(passId)) {
+          user.favourites.pull({ _id: passId });
+        }
         return await user.save();
       } else {
         const error = new Error("Password");
@@ -210,7 +227,8 @@ const getBasicPasswordInfo = async (userId, passwordId) => {
     if (user) {
       const foundPassword = user.passwords.id(passwordId);
       if (foundPassword) {
-        const { _id, username, platform, description, website } = foundPassword;
+        const { _id, username, platform, description, website, isFavourite } =
+          foundPassword;
         return { _id, username, platform, description, website };
       } else {
         const error = new Error("Password");
@@ -238,6 +256,7 @@ const addToFavourites = async (userId, passId) => {
           return true;
         } else {
           user.favourites.push(password);
+          password.isFavourite = true;
           return await user.save();
         }
       } else {
@@ -260,8 +279,10 @@ const removeFromFavourites = async (userId, passId) => {
     const user = await User.findById(userId);
     if (user) {
       const foundPassword = user.favourites.id(passId);
+      const password = user.passwords.id(passId);
       if (foundPassword) {
         user.favourites.pull({ _id: passId });
+        password.isFavourite = false;
         return user.save();
       } else {
         return false;
@@ -299,6 +320,23 @@ const getAllFavourites = async (userId) => {
     throw e;
   }
 };
+const userDashboard = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      return {
+        totalPassword: user.passwords.length,
+        favourites: user.favourites.length,
+      };
+    } else {
+      const error = new Error("User not found");
+      error.status = 404;
+      throw error;
+    }
+  } catch (e) {
+    throw e;
+  }
+};
 module.exports = {
   addPasswordToUser,
   getAccountData,
@@ -310,4 +348,5 @@ module.exports = {
   addToFavourites,
   removeFromFavourites,
   getAllFavourites,
+  userDashboard,
 };
